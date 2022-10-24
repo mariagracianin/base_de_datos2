@@ -1,17 +1,17 @@
 from peewee import *
 
 import psycopg2
-
-import pedidoSimple
-import cuenta 
 import Principal
+
+from pedidoSimple import PedidoSimple
+from cuenta import Cuenta
 
 
 class Cobro(Model):
-   id_pedido = ForeignKeyField(pedidoSimple, to_field="idPedidoSimple")
-   numero_cuenta = ForeignKeyField(cuenta, to_field="numero_cuenta")
-   aprovado = BooleanField()
-   numero_aprovacion = IntegerField()
+   id_pedido = ForeignKeyField(PedidoSimple, to_field="id", primary_key=True)
+   numero_cuenta = ForeignKeyField(Cuenta, to_field="numero_cuenta")
+   aprobado = BooleanField()
+   nro_aprovacion = BigIntegerField()
 
    class Meta:
       database = Principal.db
