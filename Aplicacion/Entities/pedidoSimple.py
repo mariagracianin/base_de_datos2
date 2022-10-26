@@ -1,11 +1,9 @@
 from peewee import *
-from cliente import Cliente
-from pedidoCompuesto import PedidoCompuesto
+from Entities.cliente import Cliente
+from Entities.pedidoCompuesto import PedidoCompuesto
+from Entities.database import *
 
-import psycopg2
-import Principal
-
-class PedidoSimple:
+class PedidoSimple(BaseModel):
    id = BigIntegerField(primary_key=True)
    precio_total = FloatField()
    estado = CharField()
@@ -13,7 +11,3 @@ class PedidoSimple:
    canal_de_compra = CharField()
    nro_pedido_compuesto = ForeignKeyField(PedidoCompuesto, to_field="id")
    dni_cliente = ForeignKeyField(Cliente, to_field="dni")
-   
-   class Meta:
-      database = Principal.db
-

@@ -2,16 +2,11 @@ from peewee import *
 
 import psycopg2
 
-import Tarjeta
-import cliente 
-import Principal
+from Entities.cliente import Cliente
+from Entities.database import *
 
-class Cuenta(Model):
+class Cuenta(BaseModel):
     numero_cuenta = BigIntegerField(primary_key=True)
-    dni_cliente = IntegerField()
+    dni_cliente = ForeignKeyField(Cliente, to_field="dni")
     usuario = CharField()
     fecha_creacion = DateField()
-    FKCuenta_Cliente = ForeignKeyField(Tarjeta, to_field="numero_cuenta")
-
-    class Meta:
-       database = Principal.db

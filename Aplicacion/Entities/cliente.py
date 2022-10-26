@@ -1,21 +1,17 @@
 from peewee import *
 
 import psycopg2
+from Entities.database import *
 
-import Principal
-
-class Cliente(Model):
-   cliente_dni = IntegerField(primary_key=True)
-   celular = IntegerField()
-   mail = CharField()
+class Cliente(BaseModel):
+   dni = IntegerField(primary_key=True)
    nombre = CharField()
    apellido = CharField()
+   celular = CharField()
+   mail = CharField()
    departamento = CharField()
    calle = CharField()
-   codigo_postal = IntegerField()
-   apartament0 = IntegerField()
+   codigo_postal = CharField()
+   apartamento = CharField()
    localidad = CharField()
-   puerta = IntegerField()
-
-   class Meta:
-      database = Principal.db
+   numero_puerta = CharField()

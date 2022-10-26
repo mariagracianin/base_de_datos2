@@ -43,7 +43,7 @@ CREATE TABLE Tarjeta(
 CREATE TABLE Producto(
     codigo_producto BIGINT      NOT NULL,
     nombre          VARCHAR     NOT NULL,
-    precio          MONEY       NOT NULL,
+    precio          FLOAT       NOT NULL,
     stock           INT         NOT NULL,
     qr              CHAR ,     
     CONSTRAINT  PKProducto
@@ -64,7 +64,7 @@ CREATE TABLE Pedido_Compuesto(
 
 CREATE TABLE Pedido_Simple(
     id              BIGINT      NOT NULL,
-    precio_total    MONEY       NOT NULL,
+    precio_total    FLOAT       NOT NULL,
     estado          VARCHAR     NOT NULL,
     fecha           DATE        NOT NULL,
     canal_de_compra VARCHAR,

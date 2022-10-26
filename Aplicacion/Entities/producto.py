@@ -1,14 +1,10 @@
 from peewee import *
+from Entities.database import *
 
-import psycopg2
-import Principal
-
-class Producto(Model):
-   codigo_producto = IntegerField(primary_key=True)
-   codigo_QR = CharField()
-   cantidad_stock = IntegerField()
-   precio = IntegerField()
+class Producto(BaseModel):
+   codigo_producto = BigIntegerField(primary_key=True)
    nombre = CharField()
-   
-   class Meta:
-      database = Principal.db
+   precio = FloatField()
+   stock = IntegerField()
+   qr = CharField()
+

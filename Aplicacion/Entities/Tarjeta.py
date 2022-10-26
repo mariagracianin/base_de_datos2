@@ -1,14 +1,12 @@
 from peewee import *
 
 import psycopg2
-import Principal
+from Entities.cuenta import Cuenta
+from Entities.database import *
 
-class Tarjeta(Model):
+class Tarjeta(BaseModel):
    numero_tarjeta = IntegerField(primary_key=True)
    tipo = CharField()
    vencimiento = DateField()
    emisor = CharField()
-   numero_cuenta = IntegerField(unique=True)
-
-   class Meta:
-      database = Principal.db
+   numero_cuenta = ForeignKeyField(Cuenta, to_field="numero_cuenta")

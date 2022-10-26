@@ -4,7 +4,9 @@ import psycopg2
 
 #from peewee import SqliteDatabase, AutoField, CharField, DateField, ForeignKeyField, Model
 
-pg_db = PostgresqlDatabase("ejemplo", user="labuser", password="labuser", host="192.168.56.101", port=5432)
+pg_db = PostgresqlDatabase("ejemplo2", user="labuser", password="labuser", host="192.168.56.101", port=5432)
+#pg_db = PostgresqlDatabase("ejemplo2", user="labuser", password="labuser", host="192.168.56.101", port=5432)
+
 
 class Profesores(Model):
    maestro_id = AutoField()

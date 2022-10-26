@@ -1,14 +1,11 @@
 from peewee import *
 
 import psycopg2
-import Principal
-import cliente 
+from Entities.cliente import Cliente
+from Entities.database import *
 
-class PedidoCompuesto:
-   idPedidoCompuesto = IntegerField(primary_key=True)
-   dni_cliente = ForeignKeyField(cliente, to_field="cliente-dni")
+class PedidoCompuesto(BaseModel):
+   id = BigIntegerField(primary_key=True)
    fecha = DateField()
    canal_de_compra = CharField()
-
-   class Meta:
-      datebase = Principal.db
+   dni_cliente = ForeignKeyField(Cliente, to_field="dni")
