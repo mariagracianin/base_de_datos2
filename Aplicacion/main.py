@@ -20,8 +20,8 @@ def mostrarMenu():
     print("----------MENU-----------")
     print("1) Alta cliente")
     print("2) Baja cliente")
-    x =input("NUMERO DEL MENU: ")
-    return x
+    num =input("NUMERO DEL MENU: ")
+    return num
 
 def altaCliente():
     print("---> ALTA CLIENTE: ")
@@ -40,9 +40,9 @@ def altaCliente():
 
     try:
         Cliente.create(dni=dni1, nombre=nombre1, apellido=apellido1, celular=celular1, mail=mail1, departamento=departamento1, calle=calle1, codigo_postal=codigo_postal1, apartamento=apartamento1, localidad=localidad1, numero_puerta=numero_puerta1)
-        print("Alta exitosa")
+        print("Alta cliente exitosa")
     except Exception:
-        print("No se pudo dar de alta al cliente")
+        print("ERROR: alta cliente")
 
     return dni1, nombre1, apellido1, celular1, mail1,departamento1, calle1, codigo_postal1, apartamento1, localidad1, numero_puerta1
 
@@ -51,11 +51,12 @@ def bajaCliente():
     print("Ingrese la cedula del cliente que quiere dar de baja: ")
     dni1 = input("DNI: ")
     try:
-        borrar_cliente = Cliente.delete().where(Cliente.dni== dni1)
-        borrar_cliente.execute()
-        print("Se elimino correctamente al cliente con cedula: " + dni1)
+        Cliente.delete().where(Cliente.dni== dni1)
+        print("Baja cliente exitosa")
     except Exception:
-        print("Error al eliminar al cliente con cedula: " + dni1)
+        print("ERROR: baja cliente")
+
+
 
 
 if __name__ == "__main__":
@@ -64,6 +65,7 @@ if __name__ == "__main__":
     #db.create_tables([Cliente, Cobro, Cuenta, PedidoCompuesto, PedidoSimple, Producto, productosPedido, Tarjeta])
     print("SE CREO TODO BIEN")
 
+    #no se si hay que hacer menu???
     while(True):
         menu = mostrarMenu()
         if(menu=="1"):
