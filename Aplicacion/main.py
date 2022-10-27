@@ -16,10 +16,16 @@ from Entities.productoPedido import productosPedido
 #db = PostgresqlDatabase('BaseDeDatos2', host='192.168.56.101', port=5432, user='labuser', password='labsuer')
 db = PostgresqlDatabase('dbd2', host='localhost', port=8888, user='dbd2g5', password='dbd2#G5')
 
+def mostrarMenu():
+    print("----------MENU-----------")
+    print("1) Alta cliente")
+    print("2) Baja cliente")
+    x =input("NUMERO DEL MENU: ")
+    return x
 
 def altaCliente():
     print("---> ALTA CLIENTE: ")
-    print("INGRESE LOS SIGUIENTES DATOS: ")
+    print("Ingrese los siguientes datos: ")
     dni1 = input("DNI: ")
     nombre1 = input("NOMBRE: ")
     apellido1 = input("APELLIDO: ")
@@ -32,24 +38,36 @@ def altaCliente():
     localidad1 = input("LOCALIDAD: ")
     numero_puerta1 = input("NUMERO PUERTA: ")
 
-    Cliente.create(dni=dni1, nombre=nombre1, apellido=apellido1, celular=celular1, mail=mail1, departamento=departamento1, calle=calle1, codigo_postal=codigo_postal1, apartamento=apartamento1, localidad=localidad1, numero_puerta=numero_puerta1)
+    try:
+        Cliente.create(dni=dni1, nombre=nombre1, apellido=apellido1, celular=celular1, mail=mail1, departamento=departamento1, calle=calle1, codigo_postal=codigo_postal1, apartamento=apartamento1, localidad=localidad1, numero_puerta=numero_puerta1)
+        print("Alta exitosa")
+    except Exception:
+        print("No se pudo dar de alta al cliente")
 
     return dni1, nombre1, apellido1, celular1, mail1,departamento1, calle1, codigo_postal1, apartamento1, localidad1, numero_puerta1
 
 def bajaCliente():
-    print("---> ALTA CLIENTE: ")
-    print("INGRESE DNI DEL CLIENTE QUE QUIERE DAR DE BAJA: ")
+    print("---> BAJA CLIENTE: ")
+    print("Ingrese la cedula del cliente que quiere dar de baja: ")
     dni1 = input("DNI: ")
-    db[Cliente].delate(dni=dni1)
-
-
+    try:
+        borrar_cliente = Cliente.delete().where(Cliente.dni== dni1)
+        borrar_cliente.execute()
+        print("Se elimino correctamente al cliente con cedula: " + dni1)
+    except Exception:
+        print("Error al eliminar al cliente con cedula: " + dni1)
 
 
 if __name__ == "__main__":
+    print("-----------------------------")
     db.connect()
-    print("ok1")
-    db.create_tables([Cliente, Cobro, Cuenta, PedidoCompuesto, PedidoSimple, Producto, productosPedido, Tarjeta])
-    print("ok2")
-    altaCliente()
-    print("ok3")
-    bajaCliente()
+    #db.create_tables([Cliente, Cobro, Cuenta, PedidoCompuesto, PedidoSimple, Producto, productosPedido, Tarjeta])
+    print("SE CREO TODO BIEN")
+
+    while(True):
+        menu = mostrarMenu()
+        if(menu=="1"):
+            altaCliente()
+    
+        elif(menu=="2"):
+            bajaCliente()
