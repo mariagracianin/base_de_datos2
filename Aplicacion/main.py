@@ -23,38 +23,24 @@ def mostrarMenu():
     num =input("NUMERO DEL MENU: ")
     return num
 
-def altaCliente():
-    print("---> ALTA CLIENTE: ")
-    print("Ingrese los siguientes datos: ")
-    dni1 = input("DNI: ")
-    nombre1 = input("NOMBRE: ")
-    apellido1 = input("APELLIDO: ")
-    celular1 = input("CELULAR: ")
-    mail1 = input("MAIL: ")
-    departamento1 = input("DEPARTAMENTO: ")
-    calle1 = input("CALLE: ")
-    codigo_postal1 = input("CODIGO POSTAL: ")
-    apartamento1 = input("APARTAMENTO: ")
-    localidad1 = input("LOCALIDAD: ")
-    numero_puerta1 = input("NUMERO PUERTA: ")
-
+def altaCliente(dni1, nombre1, apellido1, celular1, mail1, departamento1, calle1, codigo_postal1, apartamento1, localidad1, numero_puerta1):
     try:
-        Cliente.create(dni=dni1, nombre=nombre1, apellido=apellido1, celular=celular1, mail=mail1, departamento=departamento1, calle=calle1, codigo_postal=codigo_postal1, apartamento=apartamento1, localidad=localidad1, numero_puerta=numero_puerta1)
+        guardar_cliente = Cliente.create(dni=dni1, nombre=nombre1, apellido=apellido1, celular=celular1, mail=mail1, departamento=departamento1, calle=calle1, codigo_postal=codigo_postal1, apartamento=apartamento1, localidad=localidad1, numero_puerta=numero_puerta1)
+        guardar_cliente.exacute()
         print("Alta cliente exitosa")
     except Exception:
         print("ERROR: alta cliente")
 
     return dni1, nombre1, apellido1, celular1, mail1,departamento1, calle1, codigo_postal1, apartamento1, localidad1, numero_puerta1
 
-def bajaCliente():
-    print("---> BAJA CLIENTE: ")
-    print("Ingrese la cedula del cliente que quiere dar de baja: ")
-    dni1 = input("DNI: ")
+def bajaCliente(dni1):
     try:
-        Cliente.delete().where(Cliente.dni== dni1)
+        borrar_cliente = Cliente.delete().where(Cliente.dni==dni1)
+        borrar_cliente.execute()
         print("Baja cliente exitosa")
     except Exception:
         print("ERROR: baja cliente")
+    return dni1
 
 
 
@@ -69,7 +55,23 @@ if __name__ == "__main__":
     while(True):
         menu = mostrarMenu()
         if(menu=="1"):
-            altaCliente()
+            print("---> ALTA CLIENTE: ")
+            print("Ingrese los siguientes datos: ")
+            dni1 = input("DNI: ")
+            nombre1 = input("NOMBRE: ")
+            apellido1 = input("APELLIDO: ")
+            celular1 = input("CELULAR: ")
+            mail1 = input("MAIL: ")
+            departamento1 = input("DEPARTAMENTO: ")
+            calle1 = input("CALLE: ")
+            codigo_postal1 = input("CODIGO POSTAL: ")
+            apartamento1 = input("APARTAMENTO: ")
+            localidad1 = input("LOCALIDAD: ")
+            numero_puerta1 = input("NUMERO PUERTA: ")
+            altaCliente(dni1, nombre1, apellido1, celular1, mail1, departamento1, calle1, codigo_postal1, apartamento1, localidad1, numero_puerta1)
     
         elif(menu=="2"):
-            bajaCliente()
+            print("---> BAJA CLIENTE: ")
+            print("Ingrese la cedula del cliente que quiere dar de baja: ")
+            dni1 = input("DNI: ")
+            bajaCliente(dni1)
