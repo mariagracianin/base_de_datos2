@@ -37,28 +37,36 @@ def altaCliente(dni1, nombre1, apellido1, celular1, mail1, departamento1, calle1
 
     return dni1, nombre1, apellido1, celular1, mail1,departamento1, calle1, codigo_postal1, apartamento1, localidad1, numero_puerta1, nombre_usuario1
 
-def bajaCliente(dni1):
-    try:
-        borrar_cliente = Cliente.delete().where(Cliente.dni==dni1)
-        borrar_cliente.execute()
-        print("Baja cliente exitosa")
-    except Exception:
-        print("ERROR: baja cliente")
-    return dni1
-
 def altaCuenta(dni1, nombre_usuario1):
     day = datetime.now().day
     month = datetime.now().month
     year = datetime.now().year
     try:
-        guardar_cuenta = Cuenta.create(dni_cliente = dni1, usuario = nombre_usuario1, fecha_creacion = dt.date(year,month,day), numero_cuenta = 0)
+        guardar_cuenta = Cuenta.create(dni_cliente = dni1, usuario = nombre_usuario1, fecha_creacion = dt.date(year,month,day))
         print("Alta cuenta exitosa")
     except Exception:
         print("ERROR: alta cuenta")
 
+def bajaCliente(dni1):
+    try:
+        bajaCuenta(dni1)
+        borrar_cliente = Cliente.delete().where(Cliente.dni==dni1)
+        borrar_cliente.execute()
+        print("Baja cliente exitosa")
+    except Exception:
+        print("ERROR: baja cliente")
+
+def bajaCuenta(dni1):
+    try:
+        borrar_cuenta = Cuenta.delete().where(Cuenta.dni_cliente==dni1)
+        borrar_cuenta.execute()
+        print("Baja cuenta exitosa")
+    except Exception:
+        print("ERROR: baja cuenta")
+
 def modificarCliente(dni, nuevoNombre, nuevoApellido, nuevoCelular, nuevoMail, nuevoDepartamento, nuevaCalle, nuevoCodigoPostal, nuevoApartamento, nuevaLocalidad, nuevaPuerta, nuevo_usuario):
-    #query2 = Cliente.update({Cliente.celular:nuevoCelular, Cliente.mail:nuevoMail, Cliente.nombre:nuevoNombre, Cliente.apellido:nuevoApellido, Cliente.departamento:nuevoDepartamento,Cliente.apartamento:nuevoApartamento,Cliente.calle:nuevaCalle,Cliente.codigo_postal:nuevoCodigoPostal,Cliente.localidad:nuevaLocalidad,Cliente.numero_puerta:nuevaPuerta}).where(Cliente.dni==dni)
-    query2 = Cliente.update({Cliente.celular:nuevoCelular}).where(Cliente.dni==dni)
+    #query = Cliente.update({Cliente.celular:nuevoCelular, Cliente.mail:nuevoMail, Cliente.nombre:nuevoNombre, Cliente.apellido:nuevoApellido, Cliente.departamento:nuevoDepartamento,Cliente.apartamento:nuevoApartamento,Cliente.calle:nuevaCalle,Cliente.codigo_postal:nuevoCodigoPostal,Cliente.localidad:nuevaLocalidad,Cliente.numero_puerta:nuevaPuerta}).where(Cliente.dni==dni)
+    query = Cliente.update({Cliente.celular:nuevoCelular}).where(Cliente.dni==dni)
 
 def ingresarStock(codigo_producto, precio, nombre = None, stock = None, qr = "1"):
     if (Producto.get(Producto.codigo_producto == codigo_producto) == None):
@@ -84,10 +92,12 @@ def altaPedidoSimple(estado, fecha, canalDeCompra, nro_pedido_compuesto,dniclien
 
     pedidoSimple.precio = precioTotal
 
+#creo cliente -> creo cuenta creo tarjeta
+#
 if __name__ == "__main__":
     print("-----------------------------")
     db.connect()
-    #db.create_tables([Cliente, Cobro, Cuenta, PedidoCompuesto, PedidoSimple, Producto, productosPedido, Tarjeta])
+    db.create_tables([Cliente, Cobro, Cuenta, PedidoCompuesto, PedidoSimple, Producto, productosPedido, Tarjeta])
     print("SE CREO TODO BIEN")
 
     #no se si hay que hacer menu???
