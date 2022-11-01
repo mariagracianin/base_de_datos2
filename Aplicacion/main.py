@@ -60,6 +60,29 @@ def modificarCliente(dni, nuevoNombre, nuevoApellido, nuevoCelular, nuevoMail, n
     #query2 = Cliente.update({Cliente.celular:nuevoCelular, Cliente.mail:nuevoMail, Cliente.nombre:nuevoNombre, Cliente.apellido:nuevoApellido, Cliente.departamento:nuevoDepartamento,Cliente.apartamento:nuevoApartamento,Cliente.calle:nuevaCalle,Cliente.codigo_postal:nuevoCodigoPostal,Cliente.localidad:nuevaLocalidad,Cliente.numero_puerta:nuevaPuerta}).where(Cliente.dni==dni)
     query2 = Cliente.update({Cliente.celular:nuevoCelular}).where(Cliente.dni==dni)
 
+def ingresarStock(codigo_producto, precio, nombre = None, stock = None, qr = "1"):
+    if (Producto.get(Producto.codigo_producto == codigo_producto) == None):
+        neuvoProducto = Producto.create(codigo_producto = codigo_producto, precio = precio, nombre = nombre, stock = stock, qr = qr)
+    else:
+        (Producto.get(Producto.codigo_producto == codigo_producto)).stock = stock + (Producto.get(Producto.codigo_producto == codigo_producto))
+
+def altaPedidoProducto(cantidad, codigo_producto, id_pedido_simple):
+    nuevoPedidoProducto = productosPedido(cantidad = cantidad, codigo_producto = codigo_producto, id_pedido_simple = id_pedido_simple)
+
+
+
+def altaPedidoSimple(estado, fecha, canalDeCompra, nro_pedido_compuesto,dnicliente):
+    pedidoSimple = PedidoSimple.create(precio_total = 0, estado = estado, fecha = fecha, canal_de_compra = canalDeCompra, nro_pedido_compuesto = nro_pedido_compuesto, dni_cliente = dnicliente)
+    listaProductos = productosPedido.get(productosPedido.id_pedido_simple == pedidoSimple.id)
+
+    for producto in listaProductos:
+        if( (Producto.get(Producto.codigo_producto == producto.codigo_producto)).stock > producto.cantidad):
+            precioTotal = precioTotal + producto.precio
+            (Producto.get(Producto.codigo_producto == producto.codigo_producto)).stock = (Producto.get(Producto.codigo_producto == producto.codigo_producto)).stock - producto.cantidad
+        else:
+            return "no hay suficiente stock"
+
+    pedidoSimple.precio = precioTotal
 
 if __name__ == "__main__":
     print("-----------------------------")
