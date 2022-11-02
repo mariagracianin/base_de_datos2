@@ -1,8 +1,8 @@
 from peewee import *
 
 import psycopg2
-from Entities.cuenta import Cuenta
-from Entities.database import *
+from Aplicacion.Entities.cuenta import Cuenta
+from Aplicacion.Entities.database import *
 
 class Tarjeta(BaseModel):
    numero_tarjeta = IntegerField(primary_key=True)

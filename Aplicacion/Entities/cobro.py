@@ -1,9 +1,9 @@
 from peewee import *
 
 import psycopg2
-from Entities.pedidoSimple import PedidoSimple
-from Entities.cuenta import Cuenta
-from Entities.database import *
+from Aplicacion.Entities.pedidoSimple import PedidoSimple
+from Aplicacion.Entities.cuenta import Cuenta
+from Aplicacion.Entities.database import *
 
 
 class Cobro(BaseModel):
