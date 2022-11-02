@@ -1,6 +1,7 @@
 from imp import source_from_cache
 from datetime import datetime
 import datetime as dt
+from traceback import print_exc
 from peewee import *
 #import psycopg2
 from Entities.cliente import Cliente
@@ -63,9 +64,29 @@ def bajaCuenta(dni1):
     except Exception:
         print("ERROR: baja cuenta")
 
-def modificarCliente(dni, nuevoNombre, nuevoApellido, nuevoCelular, nuevoMail, nuevoDepartamento, nuevaCalle, nuevoCodigoPostal, nuevoApartamento, nuevaLocalidad, nuevaPuerta, nuevo_usuario):
+def modificarCliente(dni, nuevoNombre, nuevoApellido, nuevoCelular, nuevoMail, nuevoDepartamento, nuevaCalle, nuevoCodigoPostal, nuevoApartamento, nuevaLocalidad, nuevaPuerta):
+    try:
+        cliente = Cliente.get(Cliente.dni==dni)
+        print(cliente+"-----------")
+        cliente.nombre = nuevoNombre
+        cliente.apellido = nuevoApellido
+        cliente.celular = nuevoCelular
+        cliente.mail = nuevoMail
+        cliente.departamento = nuevoDepartamento
+        cliente.calle = nuevaCalle
+        cliente.codigo_postal = nuevoCodigoPostal
+        cliente.apartamento = nuevoApartamento
+        cliente.localidad = nuevaLocalidad
+        cliente.numero_puerta = nuevaPuerta
+        cliente.save()
+        print("Modificacion exitosa")
+    except Exception as e:   
+        print_exc(e)
+        print("ERROR en la modificaion")
+
+
     #query = Cliente.update({Cliente.celular:nuevoCelular, Cliente.mail:nuevoMail, Cliente.nombre:nuevoNombre, Cliente.apellido:nuevoApellido, Cliente.departamento:nuevoDepartamento,Cliente.apartamento:nuevoApartamento,Cliente.calle:nuevaCalle,Cliente.codigo_postal:nuevoCodigoPostal,Cliente.localidad:nuevaLocalidad,Cliente.numero_puerta:nuevaPuerta}).where(Cliente.dni==dni)
-    query = Cliente.update({Cliente.celular:nuevoCelular}).where(Cliente.dni==dni)
+    #query = Cliente.update({Cliente.celular:nuevoCelular}).where(Cliente.dni==dni)
 
 def ingresarArticulo(nombre, precio, stock, qr):
     x = 0
@@ -75,7 +96,7 @@ def ingresarArticulo(nombre, precio, stock, qr):
 if __name__ == "__main__":
     print("-----------------------------")
     db.connect()
-    db.create_tables([Cliente, Cobro, Cuenta, PedidoCompuesto, PedidoSimple, Producto, productosPedido, Tarjeta])
+    #db.create_tables([Cliente, Cobro, Cuenta, PedidoCompuesto, PedidoSimple, Producto, productosPedido, Tarjeta])
     print("SE CREO TODO BIEN")
 
     #no se si hay que hacer menu???
@@ -117,5 +138,4 @@ if __name__ == "__main__":
             apartamento1 = input("APARTAMENTO: ")
             localidad1 = input("LOCALIDAD: ")
             numero_puerta1 = input("NUMERO PUERTA: ")
-            nombre_usuario1 = input("NOMBRE DE USUARIO: ")
-            modificarCliente(dni1, nombre1, apellido1, celular1, mail1, departamento1, calle1, codigo_postal1, apartamento1, localidad1, numero_puerta1, nombre_usuario1)
+            modificarCliente(dni1, nombre1, apellido1, celular1, mail1, departamento1, calle1, codigo_postal1, apartamento1, localidad1, numero_puerta1)
