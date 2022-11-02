@@ -1,7 +1,7 @@
 from peewee import *
-from Entities.cliente import Cliente
-from Entities.pedidoCompuesto import PedidoCompuesto
-from Entities.database import *
+from Aplicacion.Entities.cliente import Cliente
+from Aplicacion.Entities.pedidoCompuesto import PedidoCompuesto
+from Aplicacion.Entities.database import *
 
 class PedidoSimple(BaseModel):
    id = BigIntegerField(primary_key=True)
