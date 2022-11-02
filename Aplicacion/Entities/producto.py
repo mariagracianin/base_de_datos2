@@ -1,5 +1,5 @@
 from peewee import *
-from Aplicacion.Entities.database import *
+from Entities.database import *
 
 class Producto(BaseModel):
    codigo_producto = BigIntegerField(primary_key=True)
