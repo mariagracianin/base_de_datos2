@@ -26,13 +26,12 @@ def mostrarMenu():
     print("2) Baja cliente")
     print("3) Modificar cliente")
     print("4) Alta tarjeta")
-<<<<<<< HEAD
-    print("10) Listar clientes")
-=======
     print("6) Listar clientes")
     print("5) Ingresar pedido Simple ")
     print("6) Agregar Producto")
->>>>>>> fcf27d082da48d179e6cabaa8f6ed1556d76f896
+
+    print("10) Listar clientes")
+
     num =input("NUMERO DEL MENU: ")
     return num
 
@@ -75,6 +74,9 @@ def bajaCuenta(dni1):
         print("ERROR: baja cuenta")
 
 def altaTarjeta(numero_tarjeta1, tipo1, vencimiento1, emisor1, numero_cuenta1):
+    print(vencimiento1[6:10])
+    print(vencimiento1[3:5])
+    print(vencimiento1[0:2])
     vencimiento1 = dt.date(int(vencimiento1[6:10]),int(vencimiento1[3:5]),int(vencimiento1[0:2]))
     try:
         guardar_tarjeta = Tarjeta.create(numero_tarjeta = numero_tarjeta1, tipo = tipo1, emisor = emisor1, numero_cuenta = numero_cuenta1, vencimiento = vencimiento1)
@@ -99,7 +101,7 @@ def modificarCliente(dni, nuevoNombre, nuevoApellido, nuevoCelular, nuevoMail, n
         cliente.numero_puerta = nuevaPuerta
         cliente.save()
         print("Modificacion exitosa")
-    except:
+    except:   
         print(exception)
         print("ERROR en la modificaion")
 
@@ -108,27 +110,28 @@ def modificarCliente(dni, nuevoNombre, nuevoApellido, nuevoCelular, nuevoMail, n
     #query = Cliente.update({Cliente.celular:nuevoCelular}).where(Cliente.dni==dni)
 
 def ingresarStock(codigo_producto, stock ,precio = None, nombre = None, qr = "1"):
-    if (Producto.get(Producto.codigo_producto == codigo_producto) == None):
+    if (Producto.get_or_none(Producto.codigo_producto == codigo_producto) == None):
         neuvoProducto = Producto.create(codigo_producto = codigo_producto, precio = precio, nombre = nombre, stock = stock, qr = qr)
     else:
-        (Producto.get(Producto.codigo_producto == codigo_producto)).stock = stock + (Producto.get(Producto.codigo_producto == codigo_producto))
+        (Producto.get_or_none(Producto.codigo_producto == codigo_producto)).stock = stock + (Producto.get_or_none(Producto.codigo_producto == codigo_producto))
 
 def altaPedidoProducto(cantidad, codigo_producto, id_pedido_simple):
-    nuevoPedidoProducto = productosPedido(cantidad = cantidad, codigo_producto = codigo_producto, id_pedido_simple = id_pedido_simple)
+    nuevoPedidoProducto = productosPedido.create(cantidad = cantidad, codigo_producto = codigo_producto, id_pedido_simple = id_pedido_simple)
 
-def altaPedidoSimple(estado, fecha, canalDeCompra, dnicliente, nro_pedido_compuesto = None ):
+def altaPedidoSimple(estado, fecha, canalDeCompra, dnicliente, nro_pedido_compuesto):
     pedidoSimple = PedidoSimple.create(precio_total = 0, estado = estado, fecha = fecha, canal_de_compra = canalDeCompra, nro_pedido_compuesto = nro_pedido_compuesto, dni_cliente = dnicliente)
 
     return pedidoSimple
 
 def calcularPrecioTotal(pedidoSimple):
-    listaProductos = productosPedido.get(productosPedido.id_pedido_simple == pedidoSimple.id)
-
-    for producto in listaProductos:
-        if ((Producto.get(Producto.codigo_producto == producto.codigo_producto)).stock > producto.cantidad):
+    listaProductosPedido = productosPedido.select().where(productosPedido.id_pedido_simple == pedidoSimple.id)
+    precioTotal = 0
+    for producto_pedido in listaProductosPedido:
+        producto = Producto.get(Producto.codigo_producto == producto_pedido.codigo_producto)
+        if ((Producto.get_or_none(Producto.codigo_producto == producto_pedido.codigo_producto)).stock > producto_pedido.cantidad):
             precioTotal = precioTotal + producto.precio
-            (Producto.get(Producto.codigo_producto == producto.codigo_producto)).stock = (Producto.get(
-                Producto.codigo_producto == producto.codigo_producto)).stock - producto.cantidad
+            (Producto.get_or_none(Producto.codigo_producto == producto_pedido.codigo_producto)).stock = (Producto.get_or_none(
+                Producto.codigo_producto == producto_pedido.codigo_producto)).stock - producto_pedido.cantidad
         else:
             return "no hay suficiente stock"
 
@@ -164,6 +167,9 @@ def listarProductosEnStock():
         print("STOCK: " + str(producto.stock)) #esto es la disponibilidad?
 
 def listarPedidosPorEstadoYFechas(estado, fechaInicio, fechaFin):
+    fechaInicio = dt.date(int(fechaInicio[6:10]),int(fechaInicio[3:5]),int(fechaInicio[0:2]))
+    fechaFin = dt.date(int(fechaFin[6:10]),int(fechaFin[3:5]),int(fechaFin[0:2]))
+
     listPSimples = PedidoSimple.select(PedidoSimple.estado == estado, PedidoSimple.fecha<fechaFin, PedidoSimple.fecha>fechaInicio)
     x = 1
     print("LISTADO DE PEDIDOS SIMPLES: ")
@@ -178,7 +184,9 @@ def listarPedidosPorEstadoYFechas(estado, fechaInicio, fechaFin):
         print("DNI CLIENTE: " + str(pedido.dni_cliente))
 
 def listarPedidosPorFechas(fechaInicio, fechaFin):
-    ##listPSimples = PedidoSimple.select(PedidoSimple.estado == estado, PedidoSimple.fecha<fechaFin, PedidoSimple.fecha>fechaInicio)
+    fechaInicio = dt.date(int(fechaInicio[6:10]),int(fechaInicio[3:5]),int(fechaInicio[0:2]))
+    fechaFin = dt.date(int(fechaFin[6:10]),int(fechaFin[3:5]),int(fechaFin[0:2]))
+    listPSimples = PedidoSimple.select(PedidoSimple.fecha<fechaFin, PedidoSimple.fecha>fechaInicio)
     x = 1
     print("LISTADO DE PEDIDOS SIMPLES: ")
     for pedido in listPSimples:
@@ -189,6 +197,7 @@ def listarPedidosPorFechas(fechaInicio, fechaFin):
         print("FECHA: " + str(pedido.fecha))
         print("CANAL DE COMPRA: " + str(pedido.canal_de_compra))
         print("NUMERO PEDIDO COMPUESTO: " + str(pedido.nro_pedido_compuesto))
+
         print("DNI CLIENTE: " + str(pedido.dni_cliente))
 
 
@@ -252,29 +261,36 @@ if __name__ == "__main__":
             numero_cuenta1 = input("NUMERO CUENTA: ")
             altaTarjeta(numero_tarjeta1, tipo1, vencimiento1, emisor1, numero_cuenta1)
 
-<<<<<<< HEAD
-        
-        elif(menu=="10"):
-=======
         elif(menu == "5"):
             print("Haga su pedido")
             dni_cliente = input("Ingrese su DNI")
             sigo = input("Precione 1 si quiere agreagr un producto o  0 si ya termino su pedido")
 
-            pedido_simple = altaPedidoSimple("por confirmar", datetime.now(), "visa", dni_cliente)
+            day = datetime.now().day
+            month = datetime.now().month
+            year = datetime.now().year
+            date1 = dt.date(year,month,day)
+
+            PedidoCompuesto.create(fecha = date1, canal_de_compra = "", dni_cliente = dni_cliente)
+            pedidoCompuesto = PedidoCompuesto.get_or_none(PedidoCompuesto.dni_cliente == dni_cliente)
+
+            pedido_simple = altaPedidoSimple("por confirmar", date1, "visa", dni_cliente, pedidoCompuesto.id)
+            pedido_simple = PedidoSimple.get_or_none((PedidoSimple.dni_cliente == int(dni_cliente)) & (PedidoSimple.fecha == date1))
+            print(str(pedido_simple.id) + "---------------------------")
 
             cantidad_productos = 0
 
-            while(sigo == 1 & cantidad_productos < 21):
+            while(sigo == "1" and cantidad_productos < 21):
+                print("entraaa")
                 codigo_producto = input("Numero del producto: ")
                 cantidad_del_producto = input("Cantidad del poducto que quiere llevar")
-                altaPedidoProducto( int(cantidad_del_producto), int(codigo_producto), pedido_simple )
-
-                pedido_simple.precio_total = calcularPrecioTotal(pedido_simple)
+                altaPedidoProducto(int(cantidad_del_producto), int(codigo_producto), pedido_simple )
 
                 cantidad_productos = cantidad_productos + int(cantidad_del_producto)
 
                 sigo = input("Precione 1 si quiere agreagr un producto o  0 si ya termino su pedido")
+
+            pedido_simple.precio_total = calcularPrecioTotal(pedido_simple)
 
             if(cantidad_productos > 20):
                 print("excedio la cantidad de productos posibles")
@@ -282,23 +298,23 @@ if __name__ == "__main__":
                 borrar_pedido_simple.execute()
                 break
 
-            cuenta = Cuenta.get(Cuenta.dni_cliente == dni_cliente)
+            cuenta = Cuenta.get_or_none(Cuenta.dni_cliente == dni_cliente)
 
-            cobro = Cobro.create(id_predido = pedido_simple.id, numero_cuenta = cuenta.numero_cuenta, aprobado = False, numero_aprovacion = None)
+            cobro = Cobro.create(id_pedido = pedido_simple.id, numero_cuenta = cuenta.numero_cuenta, aprobado = False, nro_aprovacion = 0)
 
-            tarjeta = Tarjeta.get(Tarjeta.numero_cuenta == cuenta.numero_cuenta)
+            tarjeta = Tarjeta.get_or_none(Tarjeta.numero_cuenta == cuenta.numero_cuenta)
 
             if(tarjeta != None):  # hay q ver que devuelve un get que no encontro nada
                 cobro.aprobado = True
                 print("Su pedido fue recivido con excito")
 
-        elif(menu == 6):
+        elif(menu == "6"):
             print( "Agruegue el producto que quiera agregar:")
 
             numero_producto = input ("Ingrese numero de producto: ")
             stock = input("Ingrese la cantidad de stock: ")
 
-            if(Producto.get(Producto.codigo_producto == numero_producto) != None):
+            if(Producto.get_or_none(Producto.codigo_producto == numero_producto) != None):
                 ingresarStock(int(numero_producto), int(stock))
 
             else:
@@ -307,15 +323,5 @@ if __name__ == "__main__":
 
                 ingresarStock(int(numero_producto), int(stock), int(precio), nombre)
 
-
-
-
-
-
-
-
-
-
-        elif(menu=="6"):
->>>>>>> fcf27d082da48d179e6cabaa8f6ed1556d76f896
+        elif(menu=="10"):
             listarClientes()

@@ -5,7 +5,7 @@ from Entities.cliente import Cliente
 from Entities.database import *
 
 class PedidoCompuesto(BaseModel):
-   id = BigIntegerField(primary_key=True)
+   id = AutoField()
    fecha = DateField()
    canal_de_compra = CharField()
    dni_cliente = ForeignKeyField(Cliente, to_field="dni")

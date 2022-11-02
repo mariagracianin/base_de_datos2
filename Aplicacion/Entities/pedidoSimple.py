@@ -4,7 +4,7 @@ from Entities.pedidoCompuesto import PedidoCompuesto
 from Entities.database import *
 
 class PedidoSimple(BaseModel):
-   id = BigIntegerField(primary_key=True)
+   id = AutoField()
    precio_total = FloatField()
    estado = CharField()
    fecha = DateField()
