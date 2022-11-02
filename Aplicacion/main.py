@@ -1,9 +1,10 @@
 from imp import source_from_cache
 from datetime import datetime
 import datetime as dt
-from traceback import print_exc
+from logging import exception
+from telnetlib import PRAGMA_HEARTBEAT
 from peewee import *
-#import psycopg2
+import psycopg2
 from Entities.cliente import Cliente
 from Entities.cuenta import Cuenta
 from Entities.cuenta import Cuenta
@@ -24,6 +25,8 @@ def mostrarMenu():
     print("1) Alta cliente")
     print("2) Baja cliente")
     print("3) Modificar cliente")
+    print("4) Alta tarjeta")
+    print("6) Listar clientes")
     num =input("NUMERO DEL MENU: ")
     return num
 
@@ -65,10 +68,20 @@ def bajaCuenta(dni1):
     except Exception:
         print("ERROR: baja cuenta")
 
+def altaTarjeta(numero_tarjeta1, tipo1, vencimiento1, emisor1, numero_cuenta1):
+    vencimiento1 = dt.date(int(vencimiento1[6:10]),int(vencimiento1[3:5]),int(vencimiento1[0:2]))
+    try:
+        guardar_tarjeta = Tarjeta.create(numero_tarjeta = numero_tarjeta1, tipo = tipo1, emisor = emisor1, numero_cuenta = numero_cuenta1, vencimiento = vencimiento1)
+        print("Alta tarjeta exitosa")
+    except Exception:
+        print("ERROR: alta tarjeta")
+
+
 def modificarCliente(dni, nuevoNombre, nuevoApellido, nuevoCelular, nuevoMail, nuevoDepartamento, nuevaCalle, nuevoCodigoPostal, nuevoApartamento, nuevaLocalidad, nuevaPuerta):
     try:
         cliente = Cliente.get(Cliente.dni==dni)
-        print(cliente+"-----------")
+        print("-----------")
+        print(cliente.nombre)
         cliente.nombre = nuevoNombre
         cliente.apellido = nuevoApellido
         cliente.celular = nuevoCelular
@@ -81,8 +94,8 @@ def modificarCliente(dni, nuevoNombre, nuevoApellido, nuevoCelular, nuevoMail, n
         cliente.numero_puerta = nuevaPuerta
         cliente.save()
         print("Modificacion exitosa")
-    except Exception as e:   
-        print_exc(e)
+    except:   
+        print(exception)
         print("ERROR en la modificaion")
 
 
@@ -112,6 +125,40 @@ def altaPedidoSimple(estado, fecha, canalDeCompra, nro_pedido_compuesto,dniclien
             return "no hay suficiente stock"
 
     pedidoSimple.precio = precioTotal
+
+def listarClientes():
+    listClientes = Cliente.select()
+    x = 1
+    print("LISTADO DE CLIENTES: ")
+    for cliente in listClientes:
+        print(str(x)+")")
+        print("DNI: " + str(cliente.dni))
+        print("APELLIDO: " + str(cliente.apellido))
+        print("CELULAR: " + str(cliente.celular))
+        print("MAIL: " + str(cliente.mail))
+        print("DEPARTAMENTO: " + str(cliente.departamento))
+        print("CALLE: " + str(cliente.calle))
+        print("CODIGO POSTAL: " + str(cliente.codigo_postal))
+        print("APARTAMENTO: " + str(cliente.apartamento))
+        print("LOCALIDAD: " + str(cliente.localidad))
+        print("NUMERO PUERTA: " + str(cliente.numero_puerta))
+        x = x + 1
+
+def listarProductosEnStock():
+    listProductos = Producto.select().where(Producto.stock > 0)
+    x = 1
+    print("LISTADO DE PRODUCTOS EN STOCK: ")
+    for producto in listProductos:
+        print(str(x)+")")
+        print("CODIGO PRODUCTO: " + str(producto.codigo_producto))
+        print("NOMBRE: " + str(producto.nombre))
+        print("PRECIO: " + str(producto.precio))
+        print("STOCK: " + str(producto.stock)) #esto es la disponibilidad?
+
+def listarPedidosPorEstadoYFechas(estado, fechaInicio, fechaFin):
+    listPSimples = PedidoSimple.select(PedidoSimple.estado == estado, PedidoSimple.fecha<fechaFin, PedidoSimple.fecha>fechaInicio)
+
+
 
 #creo cliente -> creo cuenta creo tarjeta
 #
@@ -161,3 +208,15 @@ if __name__ == "__main__":
             localidad1 = input("LOCALIDAD: ")
             numero_puerta1 = input("NUMERO PUERTA: ")
             modificarCliente(dni1, nombre1, apellido1, celular1, mail1, departamento1, calle1, codigo_postal1, apartamento1, localidad1, numero_puerta1)
+
+        elif(menu=="4"):
+            numero_tarjeta1 = input("NUMERO TARJETA: ")
+            tipo1 = input("TIPO: ")
+            vencimiento1 = input("VENCIMIENTO: ")
+            emisor1 = input("EMISOR: ")
+            numero_cuenta1 = input("NUMERO CUENTA: ")
+            altaTarjeta(numero_tarjeta1, tipo1, vencimiento1, emisor1, numero_cuenta1)
+
+        
+        elif(menu=="6"):
+            listarClientes()
