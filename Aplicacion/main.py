@@ -26,7 +26,7 @@ def mostrarMenu():
     print("2) Baja cliente")
     print("3) Modificar cliente")
     print("4) Alta tarjeta")
-    print("6) Listar clientes")
+    print("10) Listar clientes")
     num =input("NUMERO DEL MENU: ")
     return num
 
@@ -75,7 +75,6 @@ def altaTarjeta(numero_tarjeta1, tipo1, vencimiento1, emisor1, numero_cuenta1):
         print("Alta tarjeta exitosa")
     except Exception:
         print("ERROR: alta tarjeta")
-
 
 def modificarCliente(dni, nuevoNombre, nuevoApellido, nuevoCelular, nuevoMail, nuevoDepartamento, nuevaCalle, nuevoCodigoPostal, nuevoApartamento, nuevaLocalidad, nuevaPuerta):
     try:
@@ -157,6 +156,32 @@ def listarProductosEnStock():
 
 def listarPedidosPorEstadoYFechas(estado, fechaInicio, fechaFin):
     listPSimples = PedidoSimple.select(PedidoSimple.estado == estado, PedidoSimple.fecha<fechaFin, PedidoSimple.fecha>fechaInicio)
+    x = 1
+    print("LISTADO DE PEDIDOS SIMPLES: ")
+    for pedido in listPSimples:
+        print(str(x)+")")
+        print("CODIGO PRODUCTO: " + str(pedido.id))
+        print("PRECIO: " + str(pedido.precio_total))
+        print("ESTADO: " + str(pedido.estado))
+        print("FECHA: " + str(pedido.fecha))
+        print("CANAL DE COMPRA: " + str(pedido.canal_de_compra))
+        print("NUMERO PEDIDO COMPUESTO: " + str(pedido.nro_pedido_compuesto))
+        print("DNI CLIENTE: " + str(pedido.dni_cliente))
+
+def listarPedidosPorFechas(fechaInicio, fechaFin):
+    ##listPSimples = PedidoSimple.select(PedidoSimple.estado == estado, PedidoSimple.fecha<fechaFin, PedidoSimple.fecha>fechaInicio)
+    x = 1
+    print("LISTADO DE PEDIDOS SIMPLES: ")
+    for pedido in listPSimples:
+        print(str(x)+")")
+        print("CODIGO PRODUCTO: " + str(pedido.id))
+        print("PRECIO: " + str(pedido.precio_total))
+        print("ESTADO: " + str(pedido.estado))
+        print("FECHA: " + str(pedido.fecha))
+        print("CANAL DE COMPRA: " + str(pedido.canal_de_compra))
+        print("NUMERO PEDIDO COMPUESTO: " + str(pedido.nro_pedido_compuesto))
+        print("DNI CLIENTE: " + str(pedido.dni_cliente))
+
 
 
 
@@ -210,6 +235,7 @@ if __name__ == "__main__":
             modificarCliente(dni1, nombre1, apellido1, celular1, mail1, departamento1, calle1, codigo_postal1, apartamento1, localidad1, numero_puerta1)
 
         elif(menu=="4"):
+            print("-->ALTA TARJETA: ")
             numero_tarjeta1 = input("NUMERO TARJETA: ")
             tipo1 = input("TIPO: ")
             vencimiento1 = input("VENCIMIENTO: ")
@@ -218,5 +244,5 @@ if __name__ == "__main__":
             altaTarjeta(numero_tarjeta1, tipo1, vencimiento1, emisor1, numero_cuenta1)
 
         
-        elif(menu=="6"):
+        elif(menu=="10"):
             listarClientes()
