@@ -31,6 +31,10 @@ def mostrarMenu():
     print("6) Agregar Producto")
 
     print("10) Listar clientes")
+    print("11) Listar productos en stock")
+    print("12) Listar pedido por estado y fechas")
+    print("13) Listar pedidos entre fechas")
+    print("14) Listar pedidos de un cliente dado")
 
     num =input("NUMERO DEL MENU: ")
     return num
@@ -87,8 +91,6 @@ def altaTarjeta(numero_tarjeta1, tipo1, vencimiento1, emisor1, numero_cuenta1):
 def modificarCliente(dni, nuevoNombre, nuevoApellido, nuevoCelular, nuevoMail, nuevoDepartamento, nuevaCalle, nuevoCodigoPostal, nuevoApartamento, nuevaLocalidad, nuevaPuerta):
     try:
         cliente = Cliente.get(Cliente.dni==dni)
-        print("-----------")
-        print(cliente.nombre)
         cliente.nombre = nuevoNombre
         cliente.apellido = nuevoApellido
         cliente.celular = nuevoCelular
@@ -165,12 +167,14 @@ def listarProductosEnStock():
         print("NOMBRE: " + str(producto.nombre))
         print("PRECIO: " + str(producto.precio))
         print("STOCK: " + str(producto.stock)) #esto es la disponibilidad?
+        x = x + 1
+
 
 def listarPedidosPorEstadoYFechas(estado, fechaInicio, fechaFin):
     fechaInicio = dt.date(int(fechaInicio[6:10]),int(fechaInicio[3:5]),int(fechaInicio[0:2]))
     fechaFin = dt.date(int(fechaFin[6:10]),int(fechaFin[3:5]),int(fechaFin[0:2]))
 
-    listPSimples = PedidoSimple.select(PedidoSimple.estado == estado, PedidoSimple.fecha<fechaFin, PedidoSimple.fecha>fechaInicio)
+    listPSimples = PedidoSimple.select().where(PedidoSimple.estado == estado, PedidoSimple.fecha<fechaFin, PedidoSimple.fecha>fechaInicio)
     x = 1
     print("LISTADO DE PEDIDOS SIMPLES: ")
     for pedido in listPSimples:
@@ -180,13 +184,15 @@ def listarPedidosPorEstadoYFechas(estado, fechaInicio, fechaFin):
         print("ESTADO: " + str(pedido.estado))
         print("FECHA: " + str(pedido.fecha))
         print("CANAL DE COMPRA: " + str(pedido.canal_de_compra))
-        print("NUMERO PEDIDO COMPUESTO: " + str(pedido.nro_pedido_compuesto))
+        print("NUMERO PEDIDO COMPUESTO: " + str(pedido.nro_pedido_compuesto))#########################################------------------
         print("DNI CLIENTE: " + str(pedido.dni_cliente))
+        x = x + 1
+
 
 def listarPedidosPorFechas(fechaInicio, fechaFin):
     fechaInicio = dt.date(int(fechaInicio[6:10]),int(fechaInicio[3:5]),int(fechaInicio[0:2]))
     fechaFin = dt.date(int(fechaFin[6:10]),int(fechaFin[3:5]),int(fechaFin[0:2]))
-    listPSimples = PedidoSimple.select(PedidoSimple.fecha<fechaFin, PedidoSimple.fecha>fechaInicio)
+    listPSimples = PedidoSimple.select().where(PedidoSimple.fecha<fechaFin, PedidoSimple.fecha>fechaInicio)
     x = 1
     print("LISTADO DE PEDIDOS SIMPLES: ")
     for pedido in listPSimples:
@@ -198,6 +204,22 @@ def listarPedidosPorFechas(fechaInicio, fechaFin):
         print("CANAL DE COMPRA: " + str(pedido.canal_de_compra))
         print("NUMERO PEDIDO COMPUESTO: " + str(pedido.nro_pedido_compuesto))
         print("DNI CLIENTE: " + str(pedido.dni_cliente))
+        x = x + 1
+
+def listarPedidosDeCliente(dni):
+    listPSimples = PedidoSimple.select().where(PedidoSimple.dni_cliente == dni)
+    x = 1
+    print("LISTADO DE PEDIDOS SIMPLES DEL CLIENTE: ")
+    for pedido in listPSimples:
+        print(str(x)+")")
+        print("CODIGO PRODUCTO: " + str(pedido.id))
+        print("PRECIO: " + str(pedido.precio_total))
+        print("ESTADO: " + str(pedido.estado))
+        print("FECHA: " + str(pedido.fecha))
+        print("CANAL DE COMPRA: " + str(pedido.canal_de_compra))
+        print("NUMERO PEDIDO COMPUESTO: " + str(pedido.nro_pedido_compuesto))
+        print("DNI CLIENTE: " + str(pedido.dni_cliente))
+        x = x + 1
 
 
 
@@ -323,4 +345,31 @@ if __name__ == "__main__":
                 ingresarStock(int(numero_producto), int(stock), int(precio), nombre)
 
         elif(menu=="10"):
+            print("LISTAR CLIENTES")
             listarClientes()
+
+        elif(menu=="11"):
+            print("LISTAR PRODUCTOS EN STOCK")
+            listarProductosEnStock()
+
+        elif(menu=="12"):
+            print("LISTAR PEDIDOS ENTRE FECHAS Y SEGUN ESTADO: ")
+            print("ingrese los siguientes datos")
+            estado = input("ESTADO: ")
+            fechaInicio =  input("FECHA INICIO: ")
+            fechaFin =  input("FECHA FIN: ")
+            listarPedidosPorEstadoYFechas(estado, fechaInicio, fechaFin)
+
+        elif(menu=="13"):
+            print("LISTAR PEDIDOS ENTRE FECHAS: ")
+            print("ingrese los siguientes datos")
+            fechaInicio =  input("FECHA INICIO: ")
+            fechaFin =  input("FECHA FIN: ")
+            listarPedidosPorFechas(fechaInicio, fechaFin)
+
+        elif(menu=="14"):
+            print("LISTAR PEDIDOS DE UN CLIENTE: ")
+            print("ingrese los siguientes datos")
+            dni =  input("DNI: ")
+            listarPedidosDeCliente(dni)
+        
