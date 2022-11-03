@@ -197,7 +197,6 @@ def listarPedidosPorFechas(fechaInicio, fechaFin):
         print("FECHA: " + str(pedido.fecha))
         print("CANAL DE COMPRA: " + str(pedido.canal_de_compra))
         print("NUMERO PEDIDO COMPUESTO: " + str(pedido.nro_pedido_compuesto))
-
         print("DNI CLIENTE: " + str(pedido.dni_cliente))
 
 
