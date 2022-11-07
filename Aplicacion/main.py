@@ -135,9 +135,10 @@ def calcularPrecioTotal(pedidoSimple):
     for producto_pedido in listaProductosPedido:
         producto = Producto.get(Producto.codigo_producto == producto_pedido.codigo_producto)
         if ((Producto.get_or_none(Producto.codigo_producto == producto_pedido.codigo_producto)).stock > producto_pedido.cantidad):
-            precioTotal = precioTotal + producto.precio
+            precioTotal = precioTotal + (producto.precio)*(producto_pedido.cantidad)
             (Producto.get_or_none(Producto.codigo_producto == producto_pedido.codigo_producto)).stock = (Producto.get_or_none(
                 Producto.codigo_producto == producto_pedido.codigo_producto)).stock - producto_pedido.cantidad
+            (Producto.get_or_none(Producto.codigo_producto == producto_pedido.codigo_producto)).save()
         else:
             return "no hay suficiente stock"
 
@@ -334,7 +335,7 @@ if __name__ == "__main__":
 
             #pedido_simple = altaPedidoSimple("por confirmar", date1, "visa", dni_cliente, pedidoCompuesto.id)
 
-            pedido_simple = altaPedidoSimple("por confirmar", date1, "visa", dni_cliente)
+            pedido_simple = altaPedidoSimple("pendiente", date1, "visa", dni_cliente)
             pedido_simple = PedidoSimple.get_or_none((PedidoSimple.dni_cliente == int(dni_cliente)) & (PedidoSimple.fecha == date1))
             print(str(pedido_simple.id) + "---------------------------")
 
@@ -351,6 +352,7 @@ if __name__ == "__main__":
                 sigo = input("Precione 1 si quiere agreagr un producto o  0 si ya termino su pedido")
 
             pedido_simple.precio_total = calcularPrecioTotal(pedido_simple)
+            pedido_simple.save()
 
             if(cantidad_productos > 20):
                 print("excedio la cantidad de productos posibles")
@@ -393,7 +395,7 @@ if __name__ == "__main__":
             year = datetime.now().year
             date1 = dt.date(year, month, day)
 
-            nuevoPedidoCompueto = PedidoCompuesto.create(fecha = date1, canal_de_compra = "visa", dani_cleinte = int(dni_cliente))
+            nuevoPedidoCompueto = PedidoCompuesto.create(fecha = date1, canal_de_compra = "visa", dni_cliente = int(dni_cliente))
             nuevoPedidoCompueto.save()
 
             while(paso == "1"):
