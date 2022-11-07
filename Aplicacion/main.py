@@ -367,8 +367,14 @@ if __name__ == "__main__":
                 id_pedido_simple = input("Ingrese los pedidos simples que quiera agregar: ")
 
                 pedidoSimple = PedidoSimple.get_or_none(PedidoSimple.id == id_pedido_simple)
-                pedidoSimple.nro_pedido_compuesto = nuevoPedidoCompueto.id
-                pedidoSimple.save()
+
+                if(pedidoSimple != None):
+                    pedidoSimple.nro_pedido_compuesto = nuevoPedidoCompueto.id
+                    pedidoSimple.save()
+                else:
+                    print("No existe esta id de pedido simple")
+
+                print(pedidoSimple.nro_pedido_compuesto)
 
                 paso = input("ingrese 1 si quiere agregar pedidos a su pedido compuesto, 0 para terminar")
 
