@@ -29,6 +29,7 @@ def mostrarMenu():
     print("6) Listar clientes")
     print("5) Ingresar pedido Simple ")
     print("6) Agregar Producto")
+    print("7) Ingresar pedido Compuesto")
 
     print("10) Listar clientes")
     print("11) Listar productos en stock")
@@ -120,10 +121,13 @@ def ingresarStock(codigo_producto, stock ,precio = None, nombre = None, qr = "1"
 def altaPedidoProducto(cantidad, codigo_producto, id_pedido_simple):
     nuevoPedidoProducto = productosPedido.create(cantidad = cantidad, codigo_producto = codigo_producto, id_pedido_simple = id_pedido_simple)
 
-def altaPedidoSimple(estado, fecha, canalDeCompra, dnicliente, nro_pedido_compuesto):
-    pedidoSimple = PedidoSimple.create(precio_total = 0, estado = estado, fecha = fecha, canal_de_compra = canalDeCompra, nro_pedido_compuesto = nro_pedido_compuesto, dni_cliente = dnicliente)
+def altaPedidoSimple(estado, fecha, canalDeCompra, dnicliente, nro_pedido_compuesto = None):
+    pedidoSimple = PedidoSimple.create(precio_total = 0, estado = estado, fecha = fecha, canal_de_compra = canalDeCompra, dni_cliente = dnicliente, nro_pedido_compuesto = nro_pedido_compuesto)
 
     return pedidoSimple
+
+def altaPedidoCompuesto(fecha, canalDeCompra,dni_cliente):
+    pedido_compuesto = PedidoCompuesto.create(fecha = fecha, canal_de_compra = canalDeCompra, dni_cliente = dni_cliente)
 
 def calcularPrecioTotal(pedidoSimple):
     listaProductosPedido = productosPedido.select().where(productosPedido.id_pedido_simple == pedidoSimple.id)
@@ -292,10 +296,12 @@ if __name__ == "__main__":
             year = datetime.now().year
             date1 = dt.date(year,month,day)
 
-            PedidoCompuesto.create(fecha = date1, canal_de_compra = "", dni_cliente = dni_cliente)
-            pedidoCompuesto = PedidoCompuesto.get_or_none(PedidoCompuesto.dni_cliente == dni_cliente)
+            #PedidoCompuesto.create(fecha = date1, canal_de_compra = "", dni_cliente = dni_cliente)
+            #pedidoCompuesto = PedidoCompuesto.get_or_none(PedidoCompuesto.dni_cliente == dni_cliente)
 
-            pedido_simple = altaPedidoSimple("por confirmar", date1, "visa", dni_cliente, pedidoCompuesto.id)
+            #pedido_simple = altaPedidoSimple("por confirmar", date1, "visa", dni_cliente, pedidoCompuesto.id)
+
+            pedido_simple = altaPedidoSimple("por confirmar", date1, "visa", dni_cliente)
             pedido_simple = PedidoSimple.get_or_none((PedidoSimple.dni_cliente == int(dni_cliente)) & (PedidoSimple.fecha == date1))
             print(str(pedido_simple.id) + "---------------------------")
 
@@ -343,6 +349,28 @@ if __name__ == "__main__":
                 nombre = input("Ingrese nombre del producto: ")
 
                 ingresarStock(int(numero_producto), int(stock), int(precio), nombre)
+
+        elif(menu == "7"):
+            dni_cliente = input("Ingrese su DNI: ")
+
+            paso = "1"
+
+            day = datetime.now().day
+            month = datetime.now().month
+            year = datetime.now().year
+            date1 = dt.date(year, month, day)
+
+            nuevoPedidoCompueto = PedidoCompuesto.create(fecha = date1, canal_de_compra = "visa", dani_cleinte = int(dni_cliente))
+            nuevoPedidoCompueto.save()
+
+            while(paso == "1"):
+                id_pedido_simple = input("Ingrese los pedidos simples que quiera agregar: ")
+
+                pedidoSimple = PedidoSimple.get_or_none(PedidoSimple.id == id_pedido_simple)
+                pedidoSimple.nro_pedido_compuesto = nuevoPedidoCompueto.id
+                pedidoSimple.save()
+
+                paso = input("ingrese 1 si quiere agregar pedidos a su pedido compuesto, 0 para terminar")
 
         elif(menu=="10"):
             print("LISTAR CLIENTES")
