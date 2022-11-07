@@ -242,13 +242,10 @@ def saberEstadoPCompuesto(pedidoCompuesto):
     size = 0
     aprobados = 0
     rechazado = False
-    pendiente = False
     for pedidoSimple in listPSimples:
         size = size + 1
         if pedidoSimple.estado == "rechazado":
             rechazado = True
-        elif pedidoSimple.estado == "pendiente":
-            pendiente = True
         elif pedidoSimple.estado == "aprobado":
             aprobados = aprobados + 1
     
