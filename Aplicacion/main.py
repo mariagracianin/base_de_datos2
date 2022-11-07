@@ -174,35 +174,50 @@ def listarPedidosPorEstadoYFechas(estado, fechaInicio, fechaFin):
     fechaInicio = dt.date(int(fechaInicio[6:10]),int(fechaInicio[3:5]),int(fechaInicio[0:2]))
     fechaFin = dt.date(int(fechaFin[6:10]),int(fechaFin[3:5]),int(fechaFin[0:2]))
 
-    listPSimples = PedidoSimple.select().where(PedidoSimple.estado == estado, PedidoSimple.fecha<fechaFin, PedidoSimple.fecha>fechaInicio)
+    listPCompuestos = PedidoCompuesto.select().where(PedidoCompuesto.fecha<fechaFin, PedidoCompuesto.fecha>fechaInicio)
+    listPSimples = PedidoSimple.select().where(PedidoSimple.estado == estado, PedidoSimple.fecha<fechaFin, PedidoSimple.fecha>fechaInicio, PedidoSimple.nro_pedido_compuesto == None)
+    
     x = 1
-    print("LISTADO DE PEDIDOS SIMPLES: ")
+    print("LISTADO DE PEDIDOS: en X ESTADO ENTTRE T0 Y T1")
+    for pedido in listPCompuestos:
+        print("Pedidos compuestos: ")
+        estado = saberEstadoPCompuesto(pedido)
+        if estado == estado:
+            print(str(x)+")")
+            print("CODIGO P.COMPUESTO: " + str(pedido.id))
+        x = x + 1
     for pedido in listPSimples:
+        print("Pedidos simples que no estan en ningun compuesto")
         print(str(x)+")")
-        print("CODIGO PRODUCTO: " + str(pedido.id))
-        print("PRECIO: " + str(pedido.precio_total))
-        print("ESTADO: " + str(pedido.estado))
-        print("FECHA: " + str(pedido.fecha))
-        print("CANAL DE COMPRA: " + str(pedido.canal_de_compra))
-        print("NUMERO PEDIDO COMPUESTO: " + str(pedido.nro_pedido_compuesto))#########################################------------------
-        print("DNI CLIENTE: " + str(pedido.dni_cliente))
+        print("CODIGO P.SIMPLE: " + str(pedido.id))
         x = x + 1
 
 
 def listarPedidosPorFechas(fechaInicio, fechaFin):
     fechaInicio = dt.date(int(fechaInicio[6:10]),int(fechaInicio[3:5]),int(fechaInicio[0:2]))
     fechaFin = dt.date(int(fechaFin[6:10]),int(fechaFin[3:5]),int(fechaFin[0:2]))
-    listPSimples = PedidoSimple.select().where(PedidoSimple.fecha<fechaFin, PedidoSimple.fecha>fechaInicio)
+
+    listPCompuestos = PedidoCompuesto.select().where(PedidoCompuesto.fecha<fechaFin, PedidoCompuesto.fecha>fechaInicio)
+    listPSimples = PedidoSimple.select().where(PedidoSimple.fecha<fechaFin, PedidoSimple.fecha>fechaInicio, PedidoSimple.nro_pedido_compuesto == None)
+    
     x = 1
+    print("LISTADO DE PEDIDOS: ENTRE T0 Y T1")
+    for pedido in listPCompuestos:
+        print("Pedidos compuestos: ")
+        estado = saberEstadoPCompuesto(pedido)
+        pedidoSimpleDelCompuesto = PedidoSimple.get(PedidoSimple.nro_pedido_compuesto == pedido.id)
+
+        print(str(x)+")")
+        print("CODIGO P.COMPUESTO: " + str(pedido.id))
+        print("ESTADO: " + str(estado))
+        print("DNI CLIENTE: " + pedidoSimpleDelCompuesto.dni_cliente)            
+        x = x + 1
+
     print("LISTADO DE PEDIDOS SIMPLES: ")
     for pedido in listPSimples:
         print(str(x)+")")
-        print("CODIGO PRODUCTO: " + str(pedido.id))
-        print("PRECIO: " + str(pedido.precio_total))
+        print("CODIGO P.SIMPLE: " + str(pedido.id))
         print("ESTADO: " + str(pedido.estado))
-        print("FECHA: " + str(pedido.fecha))
-        print("CANAL DE COMPRA: " + str(pedido.canal_de_compra))
-        print("NUMERO PEDIDO COMPUESTO: " + str(pedido.nro_pedido_compuesto))
         print("DNI CLIENTE: " + str(pedido.dni_cliente))
         x = x + 1
 
@@ -221,7 +236,28 @@ def listarPedidosDeCliente(dni):
         print("DNI CLIENTE: " + str(pedido.dni_cliente))
         x = x + 1
 
-
+def saberEstadoPCompuesto(pedidoCompuesto):
+    idCompuesto = pedidoCompuesto.id
+    listPSimples = PedidoSimple.select().where(PedidoSimple.nro_pedido_compuesto == idCompuesto)
+    size = 0
+    aprobados = 0
+    rechazado = False
+    pendiente = False
+    for pedidoSimple in listPSimples:
+        size = size + 1
+        if pedidoSimple.estado == "rechazado":
+            rechazado = True
+        elif pedidoSimple.estado == "pendiente":
+            pendiente = True
+        elif pedidoSimple.estado == "aprobado":
+            aprobados = aprobados + 1
+    
+    if aprobados == size:
+        return "aprobado"
+    elif rechazado == True:
+        return "rechazado"
+    else:
+        return "pendiente"
 
 
 #creo cliente -> creo cuenta creo tarjeta
