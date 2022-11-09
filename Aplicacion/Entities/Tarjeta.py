@@ -1,3 +1,5 @@
+from tkinter import CASCADE
+
 from peewee import *
 
 import psycopg2
@@ -9,4 +11,4 @@ class Tarjeta(BaseModel):
    tipo = CharField()
    vencimiento = DateField()
    emisor = CharField()
-   numero_cuenta = ForeignKeyField(Cuenta, to_field="numero_cuenta")
+   numero_cuenta = ForeignKeyField(Cuenta, to_field="numero_cuenta", on_update= CASCADE, on_delete=CASCADE)

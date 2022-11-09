@@ -1,3 +1,5 @@
+from tkinter import CASCADE
+
 from peewee import *
 
 import psycopg2
@@ -8,4 +10,4 @@ class PedidoCompuesto(BaseModel):
    id = AutoField()
    fecha = DateField()
    canal_de_compra = CharField()
-   dni_cliente = ForeignKeyField(Cliente, to_field="dni")
+   dni_cliente = ForeignKeyField(Cliente, to_field="dni", on_update=CASCADE, on_delete=CASCADE)
