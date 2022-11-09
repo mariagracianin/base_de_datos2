@@ -26,7 +26,6 @@ def mostrarMenu():
     print("2) Baja cliente")
     print("3) Modificar cliente")
     print("4) Alta tarjeta")
-    print("6) Listar clientes")
     print("5) Ingresar pedido Simple ")
     print("6) Agregar Producto")
     print("7) Ingresar pedido Compuesto")
@@ -184,15 +183,17 @@ def listarPedidosPorEstadoYFechas(estado, fechaInicio, fechaFin):
     
     x = 1
     print("LISTADO DE PEDIDOS: en X ESTADO ENTTRE T0 Y T1")
+    print("-->Pedidos compuestos: ")
     for pedido in listPCompuestos:
-        print("Pedidos compuestos: ")
         estado = saberEstadoPCompuesto(pedido)
         if estado == estado:
             print(str(x)+")")
             print("CODIGO P.COMPUESTO: " + str(pedido.id))
         x = x + 1
+
+    x = 1
+    print("-->Pedidos simples que no estan en ningun compuesto")
     for pedido in listPSimples:
-        print("Pedidos simples que no estan en ningun compuesto")
         print(str(x)+")")
         print("CODIGO P.SIMPLE: " + str(pedido.id))
         x = x + 1
@@ -207,18 +208,18 @@ def listarPedidosPorFechas(fechaInicio, fechaFin):
     
     x = 1
     print("LISTADO DE PEDIDOS: ENTRE T0 Y T1")
+    print("-->Pedidos compuestos: ")
     for pedido in listPCompuestos:
-        print("Pedidos compuestos: ")
         estado = saberEstadoPCompuesto(pedido)
-        pedidoSimpleDelCompuesto = PedidoSimple.get(PedidoSimple.nro_pedido_compuesto == pedido.id)
-
+    
         print(str(x)+")")
         print("CODIGO P.COMPUESTO: " + str(pedido.id))
         print("ESTADO: " + str(estado))
-        print("DNI CLIENTE: " + pedidoSimpleDelCompuesto.dni_cliente)            
+        print("DNI CLIENTE: " + str(pedido.dni_cliente))            
         x = x + 1
 
-    print("LISTADO DE PEDIDOS SIMPLES: ")
+    x = 1
+    print("-->Pedidos simples que no estan en ningun compuesto ")
     for pedido in listPSimples:
         print(str(x)+")")
         print("CODIGO P.SIMPLE: " + str(pedido.id))
@@ -227,17 +228,27 @@ def listarPedidosPorFechas(fechaInicio, fechaFin):
         x = x + 1
 
 def listarPedidosDeCliente(dni):
-    listPSimples = PedidoSimple.select().where(PedidoSimple.dni_cliente == dni)
+    listPCompuestos = PedidoCompuesto.select().where(PedidoCompuesto.dni_cliente == dni)
+    listPSimples = PedidoSimple.select().where(PedidoSimple.dni_cliente == dni, PedidoSimple.nro_pedido_compuesto == None)
+    
     x = 1
     print("LISTADO DE PEDIDOS SIMPLES DEL CLIENTE: ")
+    print("-->Pedidos compuestos: ")
+    for pedido in listPCompuestos:
+        estado = saberEstadoPCompuesto(pedido)
+    
+        print(str(x)+")")
+        print("CODIGO P.COMPUESTO: " + str(pedido.id))
+        print("ESTADO: " + str(estado))
+        print("DNI CLIENTE: " + str(pedido.dni_cliente))            
+        x = x + 1
+
+    x = 1
+    print("-->Pedidos simples que no estan en ningun compuesto ")
     for pedido in listPSimples:
         print(str(x)+")")
-        print("CODIGO PRODUCTO: " + str(pedido.id))
-        print("PRECIO: " + str(pedido.precio_total))
+        print("CODIGO P.SIMPLE: " + str(pedido.id))
         print("ESTADO: " + str(pedido.estado))
-        print("FECHA: " + str(pedido.fecha))
-        print("CANAL DE COMPRA: " + str(pedido.canal_de_compra))
-        print("NUMERO PEDIDO COMPUESTO: " + str(pedido.nro_pedido_compuesto))
         print("DNI CLIENTE: " + str(pedido.dni_cliente))
         x = x + 1
 
@@ -247,23 +258,32 @@ def saberEstadoPCompuesto(pedidoCompuesto):
     size = 0
     aprobados = 0
     rechazado = False
+    despachado = False
+    entregado = False
     for pedidoSimple in listPSimples:
         size = size + 1
-        if pedidoSimple.estado == "rechazado":
-            rechazado = True
-        elif pedidoSimple.estado == "aprobado":
+        if pedidoSimple.estado == "aprobado":
             aprobados = aprobados + 1
+        elif pedidoSimple.estado == "rechazado":
+            rechazado = True
+        elif pedidoSimple.estado == "despachado":
+            despachado = True
+        elif pedidoSimple.estado == "entregado":
+            entregado = True
+
     
     if aprobados == size:
         return "aprobado"
     elif rechazado == True:
         return "rechazado"
+    elif despachado == True and entregado == False:
+        return "despachado"
+    elif despachado == False and entregado == True:
+        return "entregado"
     else:
         return "pendiente"
 
 
-#creo cliente -> creo cuenta creo tarjeta
-#
 if __name__ == "__main__":
     print("-----------------------------")
     db.connect()
