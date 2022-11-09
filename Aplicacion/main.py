@@ -136,8 +136,8 @@ def calcularPrecioTotal(pedidoSimple):
     precioTotal = 0
 
     for producto_pedido in listaProductosPedido:
-        producto = Producto.select().where(Producto.codigo_producto == producto_pedido.codigo_producto)
-        #producto = Producto.get(Producto.codigo_producto == producto_pedido.codigo_producto)
+        #producto = Producto.select().where(Producto.codigo_producto == producto_pedido.codigo_producto)
+        producto = Producto.get(Producto.codigo_producto == producto_pedido.codigo_producto)
 
         if (producto.stock > producto_pedido.cantidad):
 
