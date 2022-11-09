@@ -40,25 +40,39 @@ def mostrarMenu():
     return num
 
 def altaCliente(dni1, nombre1, apellido1, celular1, mail1, departamento1, calle1, codigo_postal1, apartamento1, localidad1, numero_puerta1, nombre_usuario1):
-    try:
-        guardar_cliente = Cliente.create(dni=dni1, nombre=nombre1, apellido=apellido1, celular=celular1, mail=mail1, departamento=departamento1, calle=calle1, codigo_postal=codigo_postal1, apartamento=apartamento1, localidad=localidad1, numero_puerta=numero_puerta1)
-        #guardar_cliente.exacute()
-        print("Alta cliente exitosa")
-        altaCuenta(dni1, nombre_usuario1)
-    except Exception:
-        print("ERROR: alta cliente")
+    query = Cliente.select().where(Cliente.dni == dni1)
+    seguir  = 0
+    if(query.exists()):
+        seguir  = 1
 
-    return dni1, nombre1, apellido1, celular1, mail1,departamento1, calle1, codigo_postal1, apartamento1, localidad1, numero_puerta1, nombre_usuario1
+    if(seguir == 0):
+        try:
+            guardar_cliente = Cliente.create(dni=dni1, nombre=nombre1, apellido=apellido1, celular=celular1, mail=mail1, departamento=departamento1, calle=calle1, codigo_postal=codigo_postal1, apartamento=apartamento1, localidad=localidad1, numero_puerta=numero_puerta1)
+            guardar_cliente.save()
+            print("Alta cliente exitosa")
+            altaCuenta(dni1, nombre_usuario1)
+        except Exception:
+            print("ERROR: alta cliente")
+
+        return dni1, nombre1, apellido1, celular1, mail1,departamento1, calle1, codigo_postal1, apartamento1, localidad1, numero_puerta1, nombre_usuario1
 
 def altaCuenta(dni1, nombre_usuario1):
-    day = datetime.now().day
-    month = datetime.now().month
-    year = datetime.now().year
-    try:
-        guardar_cuenta = Cuenta.create(dni_cliente = dni1, usuario = nombre_usuario1, fecha_creacion = dt.date(year,month,day))
-        print("Alta cuenta exitosa")
-    except Exception:
-        print("ERROR: alta cuenta")
+
+    seguir = 0
+
+    if(Cliente.get_or_none(Cliente.dni_cliente == dni1) != None):
+        print("El dni no existe")
+        seguir = 1
+
+    if(seguir != 1):
+        day = datetime.now().day
+        month = datetime.now().month
+        year = datetime.now().year
+        try:
+            guardar_cuenta = Cuenta.create(dni_cliente = dni1, usuario = nombre_usuario1, fecha_creacion = dt.date(year,month,day))
+            print("Alta cuenta exitosa")
+        except Exception:
+            print("ERROR: alta cuenta")
 
 def bajaCliente(dni1):
     try:
@@ -68,6 +82,7 @@ def bajaCliente(dni1):
         print("Baja cliente exitosa")
     except Exception:
         print("ERROR: baja cliente")
+        print("Esta mal ingresada la cedula")
 
 def bajaCuenta(dni1):
     try:
@@ -89,23 +104,32 @@ def altaTarjeta(numero_tarjeta1, tipo1, vencimiento1, emisor1, numero_cuenta1):
         print("ERROR: alta tarjeta")
 
 def modificarCliente(dni, nuevoNombre, nuevoApellido, nuevoCelular, nuevoMail, nuevoDepartamento, nuevaCalle, nuevoCodigoPostal, nuevoApartamento, nuevaLocalidad, nuevaPuerta):
-    try:
-        cliente = Cliente.get(Cliente.dni==dni)
-        cliente.nombre = nuevoNombre
-        cliente.apellido = nuevoApellido
-        cliente.celular = nuevoCelular
-        cliente.mail = nuevoMail
-        cliente.departamento = nuevoDepartamento
-        cliente.calle = nuevaCalle
-        cliente.codigo_postal = nuevoCodigoPostal
-        cliente.apartamento = nuevoApartamento
-        cliente.localidad = nuevaLocalidad
-        cliente.numero_puerta = nuevaPuerta
-        cliente.save()
-        print("Modificacion exitosa")
-    except:   
-        print(exception)
-        print("ERROR en la modificaion")
+    query = Cliente.sellect().where(Cliente.dni == dni)
+    seguir  = 0
+    if(query.exists()):
+        seguir = 1
+
+    if(seguir == 1):
+        try:
+            cliente = Cliente.get(Cliente.dni==dni)
+            cliente.nombre = nuevoNombre
+            cliente.apellido = nuevoApellido
+            cliente.celular = nuevoCelular
+            cliente.mail = nuevoMail
+            cliente.departamento = nuevoDepartamento
+            cliente.calle = nuevaCalle
+            cliente.codigo_postal = nuevoCodigoPostal
+            cliente.apartamento = nuevoApartamento
+            cliente.localidad = nuevaLocalidad
+            cliente.numero_puerta = nuevaPuerta
+            cliente.save()
+            print("Modificacion exitosa")
+        except:
+            print(exception)
+            print("ERROR en la modificaion")
+            print("Esta mal ingresada la cedula")
+    else:
+        print("El cliente que queres modificar no existe")
 
 
     #query = Cliente.update({Cliente.celular:nuevoCelular, Cliente.mail:nuevoMail, Cliente.nombre:nuevoNombre, Cliente.apellido:nuevoApellido, Cliente.departamento:nuevoDepartamento,Cliente.apartamento:nuevoApartamento,Cliente.calle:nuevaCalle,Cliente.codigo_postal:nuevoCodigoPostal,Cliente.localidad:nuevaLocalidad,Cliente.numero_puerta:nuevaPuerta}).where(Cliente.dni==dni)
@@ -130,6 +154,9 @@ def altaPedidoSimple(estado, fecha, canalDeCompra, dnicliente, nro_pedido_compue
 
 def altaPedidoCompuesto(fecha, canalDeCompra,dni_cliente):
     pedido_compuesto = PedidoCompuesto.create(fecha = fecha, canal_de_compra = canalDeCompra, dni_cliente = dni_cliente)
+    pedido_compuesto.save()
+
+    return pedido_compuesto
 
 def calcularPrecioTotal(pedidoSimple):
     listaProductosPedido = productosPedido.select().where(productosPedido.id_pedido_simple == pedidoSimple.id)
