@@ -10,4 +10,4 @@ class Cobro(BaseModel):
    id_pedido = ForeignKeyField(PedidoSimple, to_field="id", primary_key=True)
    numero_cuenta = ForeignKeyField(Cuenta, to_field="numero_cuenta")
    aprobado = BooleanField()
-   nro_aprovacion = BigIntegerField()
+   nro_aprovacion = BigIntegerField() #Autogenerado

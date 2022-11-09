@@ -16,9 +16,15 @@ from Entities.producto import Producto
 from Entities.productoPedido import productosPedido
 
 
+
 #db = PostgresqlDatabase('BaseDeDatos2', host='localhost', port=5432, user='postgres', password='Igna.soler10')
 #db = PostgresqlDatabase('BaseDeDatos2', host='192.168.56.101', port=5432, user='labuser', password='labsuer')
-db = PostgresqlDatabase('dbd2', host='localhost', port=8888, user='dbd2g5', password='dbd2#G5')
+
+#db = PostgresqlDatabase('dbd2', host='localhost', port=8888, user='dbd2g5', password='dbd2#G5')
+db = psycopg2.connect(database = 'dbd2', host='localhost', port=8888, user='dbd2g5', password='dbd2#G5')
+db.autocommit = True
+cursor = db.cursor()
+
 
 def mostrarMenu():
     print("----------MENU-----------")
@@ -26,10 +32,11 @@ def mostrarMenu():
     print("2) Baja cliente")
     print("3) Modificar cliente")
     print("4) Alta tarjeta")
-    print("5) Ingresar pedido Simple ")
-    print("6) Agregar Producto")
+    print("5) Agregar Producto")
+    print("6) Ingresar pedido Simple ")
     print("7) Ingresar pedido Compuesto")
 
+    print("9) Listar clientes con SQL")
     print("10) Listar clientes")
     print("11) Listar productos en stock")
     print("12) Listar pedido por estado y fechas")
@@ -38,6 +45,18 @@ def mostrarMenu():
 
     num =input("NUMERO DEL MENU: ")
     return num
+
+def verClientesSQL():
+    sql = """SELECT * FROM cliente"""
+    cursor.execute(sql)
+    clientes = cursor.fetchall()
+    x = 1
+    print("LISTADO DE CLIENTES: ")
+    for cliente in clientes:
+        print(str(x)+")")
+        print(cliente)
+        x = x + 1    
+
 
 def altaCliente(dni1, nombre1, apellido1, celular1, mail1, departamento1, calle1, codigo_postal1, apartamento1, localidad1, numero_puerta1, nombre_usuario1):
     try:
@@ -62,15 +81,18 @@ def altaCuenta(dni1, nombre_usuario1):
 
 def bajaCliente(dni1):
     try:
+        Cliente.get_by_id(dni1)
         bajaCuenta(dni1)
         borrar_cliente = Cliente.delete().where(Cliente.dni==dni1)
         borrar_cliente.execute()
         print("Baja cliente exitosa")
-    except Exception:
+    except Exception as e:
+        print(e)
         print("ERROR: baja cliente")
 
 def bajaCuenta(dni1):
     try:
+        Cuenta.get(Cuenta.dni_cliente == dni1)
         borrar_cuenta = Cuenta.delete().where(Cuenta.dni_cliente==dni1)
         borrar_cuenta.execute()
         print("Baja cuenta exitosa")
@@ -106,10 +128,6 @@ def modificarCliente(dni, nuevoNombre, nuevoApellido, nuevoCelular, nuevoMail, n
     except:   
         print(exception)
         print("ERROR en la modificaion")
-
-
-    #query = Cliente.update({Cliente.celular:nuevoCelular, Cliente.mail:nuevoMail, Cliente.nombre:nuevoNombre, Cliente.apellido:nuevoApellido, Cliente.departamento:nuevoDepartamento,Cliente.apartamento:nuevoApartamento,Cliente.calle:nuevaCalle,Cliente.codigo_postal:nuevoCodigoPostal,Cliente.localidad:nuevaLocalidad,Cliente.numero_puerta:nuevaPuerta}).where(Cliente.dni==dni)
-    #query = Cliente.update({Cliente.celular:nuevoCelular}).where(Cliente.dni==dni)
 
 def ingresarStock(codigo_producto, stock ,precio = None, nombre = None, qr = "1"):
     if (Producto.get_or_none(Producto.codigo_producto == codigo_producto) == None):
@@ -291,12 +309,11 @@ def saberEstadoPCompuesto(pedidoCompuesto):
 
 
 if __name__ == "__main__":
-    print("-----------------------------")
-    db.connect()
+    print("----------------------------------------")
+    #db.connect()
     #db.create_tables([Cliente, Cobro, Cuenta, PedidoCompuesto, PedidoSimple, Producto, productosPedido, Tarjeta])
     print("SE CREO TODO BIEN")
 
-    #no se si hay que hacer menu???
     while(True):
         menu = mostrarMenu()
         if(menu=="1"):
@@ -323,7 +340,7 @@ if __name__ == "__main__":
             bajaCliente(dni1)
 
         elif(menu=="3"):
-            print("-->MODIFICAR CLIENTE: ")
+            print("--->MODIFICAR CLIENTE: ")
             dni1 = input("DNI: ")
             nombre1 = input("NOMBRE: ")
             apellido1 = input("APELLIDO: ")
@@ -338,7 +355,7 @@ if __name__ == "__main__":
             modificarCliente(dni1, nombre1, apellido1, celular1, mail1, departamento1, calle1, codigo_postal1, apartamento1, localidad1, numero_puerta1)
 
         elif(menu=="4"):
-            print("-->ALTA TARJETA: ")
+            print("--->ALTA TARJETA: ")
             numero_tarjeta1 = input("NUMERO TARJETA: ")
             tipo1 = input("TIPO: ")
             vencimiento1 = input("VENCIMIENTO: ")
@@ -346,8 +363,8 @@ if __name__ == "__main__":
             numero_cuenta1 = input("NUMERO CUENTA: ")
             altaTarjeta(numero_tarjeta1, tipo1, vencimiento1, emisor1, numero_cuenta1)
 
-        elif(menu == "5"):
-            print("Haga su pedido")
+        elif(menu == "6"):
+            print("--->Haga su pedido")
             dni_cliente = input("Ingrese su DNI: ")
             sigo = input("Precione 1 si quiere agreagr un producto o  0 si ya termino su pedido: ")
 
@@ -369,7 +386,6 @@ if __name__ == "__main__":
             cantidad_productos = 0
 
             while(sigo == "1" and cantidad_productos < 21):
-                print("entraaa")
                 codigo_producto = input("Numero del producto: ")
                 cantidad_del_producto = input("Cantidad del poducto que quiere llevar: ")
                 altaPedidoProducto(int(cantidad_del_producto), int(codigo_producto), pedido_simple )
@@ -397,8 +413,8 @@ if __name__ == "__main__":
                 cobro.aprobado = True
                 print("Su pedido fue recivido con excito")
 
-        elif(menu == "6"):
-            print( "Agruegue el producto que quiera agregar:")
+        elif(menu == "5"):
+            print( "--->Agruegue el producto que quiera agregar:")
 
             numero_producto = input ("Ingrese numero de producto: ")
             stock = input("Ingrese la cantidad de stock: ")
@@ -440,16 +456,20 @@ if __name__ == "__main__":
 
                 paso = input("ingrese 1 si quiere agregar pedidos a su pedido compuesto, 0 para terminar")
 
+        elif(menu=="9"):
+            print("--->LISTADO CLIENTES CON SQL: ")
+            verClientesSQL()
+
         elif(menu=="10"):
-            print("LISTAR CLIENTES")
+            print("--->LISTAR CLIENTES")
             listarClientes()
 
         elif(menu=="11"):
-            print("LISTAR PRODUCTOS EN STOCK")
+            print("--->LISTAR PRODUCTOS EN STOCK")
             listarProductosEnStock()
 
         elif(menu=="12"):
-            print("LISTAR PEDIDOS ENTRE FECHAS Y SEGUN ESTADO: ")
+            print("--->LISTAR PEDIDOS ENTRE FECHAS Y SEGUN ESTADO: ")
             print("ingrese los siguientes datos")
             estado = input("ESTADO: ")
             fechaInicio =  input("FECHA INICIO: ")
@@ -457,14 +477,14 @@ if __name__ == "__main__":
             listarPedidosPorEstadoYFechas(estado, fechaInicio, fechaFin)
 
         elif(menu=="13"):
-            print("LISTAR PEDIDOS ENTRE FECHAS: ")
+            print("--->LISTAR PEDIDOS ENTRE FECHAS: ")
             print("ingrese los siguientes datos")
             fechaInicio =  input("FECHA INICIO: ")
             fechaFin =  input("FECHA FIN: ")
             listarPedidosPorFechas(fechaInicio, fechaFin)
 
         elif(menu=="14"):
-            print("LISTAR PEDIDOS DE UN CLIENTE: ")
+            print("--->LISTAR PEDIDOS DE UN CLIENTE: ")
             print("ingrese los siguientes datos")
             dni =  input("DNI: ")
             listarPedidosDeCliente(dni)
