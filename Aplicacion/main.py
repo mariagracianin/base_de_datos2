@@ -114,15 +114,18 @@ def modificarCliente(dni, nuevoNombre, nuevoApellido, nuevoCelular, nuevoMail, n
 
 def ingresarStock(codigo_producto, stock ,precio = None, nombre = None, qr = "1"):
     if (Producto.get_or_none(Producto.codigo_producto == codigo_producto) == None):
-        neuvoProducto = Producto.create(codigo_producto = codigo_producto, precio = precio, nombre = nombre, stock = stock, qr = qr)
+        nuevoProducto = Producto.create(codigo_producto = codigo_producto, precio = precio, nombre = nombre, stock = stock, qr = qr)
+        nuevoProducto.save()
     else:
         (Producto.get_or_none(Producto.codigo_producto == codigo_producto)).stock = stock + (Producto.get_or_none(Producto.codigo_producto == codigo_producto))
 
 def altaPedidoProducto(cantidad, codigo_producto, id_pedido_simple):
     nuevoPedidoProducto = productosPedido.create(cantidad = cantidad, codigo_producto = codigo_producto, id_pedido_simple = id_pedido_simple)
+    nuevoPedidoProducto.save()
 
 def altaPedidoSimple(estado, fecha, canalDeCompra, dnicliente, nro_pedido_compuesto = None):
     pedidoSimple = PedidoSimple.create(precio_total = 0, estado = estado, fecha = fecha, canal_de_compra = canalDeCompra, dni_cliente = dnicliente, nro_pedido_compuesto = nro_pedido_compuesto)
+    pedidoSimple.save()
 
     return pedidoSimple
 
@@ -132,13 +135,16 @@ def altaPedidoCompuesto(fecha, canalDeCompra,dni_cliente):
 def calcularPrecioTotal(pedidoSimple):
     listaProductosPedido = productosPedido.select().where(productosPedido.id_pedido_simple == pedidoSimple.id)
     precioTotal = 0
+
     for producto_pedido in listaProductosPedido:
-        producto = Producto.get(Producto.codigo_producto == producto_pedido.codigo_producto)
-        if ((Producto.get_or_none(Producto.codigo_producto == producto_pedido.codigo_producto)).stock > producto_pedido.cantidad):
+        producto = Producto.select().where(Producto.codigo_producto == producto_pedido.codigo_producto)
+        #producto = Producto.get(Producto.codigo_producto == producto_pedido.codigo_producto)
+
+        if (producto.stock > producto_pedido.cantidad):
+
             precioTotal = precioTotal + (producto.precio)*(producto_pedido.cantidad)
-            (Producto.get_or_none(Producto.codigo_producto == producto_pedido.codigo_producto)).stock = (Producto.get_or_none(
-                Producto.codigo_producto == producto_pedido.codigo_producto)).stock - producto_pedido.cantidad
-            (Producto.get_or_none(Producto.codigo_producto == producto_pedido.codigo_producto)).save()
+            producto.stock = producto.stock - producto_pedido.cantidad
+            producto.save()
         else:
             return "no hay suficiente stock"
 
@@ -322,8 +328,8 @@ if __name__ == "__main__":
 
         elif(menu == "5"):
             print("Haga su pedido")
-            dni_cliente = input("Ingrese su DNI")
-            sigo = input("Precione 1 si quiere agreagr un producto o  0 si ya termino su pedido")
+            dni_cliente = input("Ingrese su DNI: ")
+            sigo = input("Precione 1 si quiere agreagr un producto o  0 si ya termino su pedido: ")
 
             day = datetime.now().day
             month = datetime.now().month
@@ -336,7 +342,8 @@ if __name__ == "__main__":
             #pedido_simple = altaPedidoSimple("por confirmar", date1, "visa", dni_cliente, pedidoCompuesto.id)
 
             pedido_simple = altaPedidoSimple("pendiente", date1, "visa", dni_cliente)
-            pedido_simple = PedidoSimple.get_or_none((PedidoSimple.dni_cliente == int(dni_cliente)) & (PedidoSimple.fecha == date1))
+            pedido_simple.save()
+
             print(str(pedido_simple.id) + "---------------------------")
 
             cantidad_productos = 0
@@ -344,12 +351,12 @@ if __name__ == "__main__":
             while(sigo == "1" and cantidad_productos < 21):
                 print("entraaa")
                 codigo_producto = input("Numero del producto: ")
-                cantidad_del_producto = input("Cantidad del poducto que quiere llevar")
+                cantidad_del_producto = input("Cantidad del poducto que quiere llevar: ")
                 altaPedidoProducto(int(cantidad_del_producto), int(codigo_producto), pedido_simple )
 
                 cantidad_productos = cantidad_productos + int(cantidad_del_producto)
 
-                sigo = input("Precione 1 si quiere agreagr un producto o  0 si ya termino su pedido")
+                sigo = input("Precione 1 si quiere agreagr un producto o  0 si ya termino su pedido: ")
 
             pedido_simple.precio_total = calcularPrecioTotal(pedido_simple)
             pedido_simple.save()
