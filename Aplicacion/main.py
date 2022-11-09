@@ -100,6 +100,9 @@ def bajaCuenta(dni1):
         print("ERROR: baja cuenta")
 
 def altaTarjeta(numero_tarjeta1, tipo1, vencimiento1, emisor1, numero_cuenta1):
+    if Tarjeta.get_or_none(Tarjeta.numero_tarjeta == numero_tarjeta1):
+        print("YA EXISTE UNA TARJETA CON ESE NUMERO")
+        return
     print(vencimiento1[6:10])
     print(vencimiento1[3:5])
     print(vencimiento1[0:2])
@@ -197,10 +200,16 @@ def listarProductosEnStock():
         print("STOCK: " + str(producto.stock)) #esto es la disponibilidad?
         x = x + 1
 
-
 def listarPedidosPorEstadoYFechas(estado, fechaInicio, fechaFin):
-    fechaInicio = dt.date(int(fechaInicio[6:10]),int(fechaInicio[3:5]),int(fechaInicio[0:2]))
-    fechaFin = dt.date(int(fechaFin[6:10]),int(fechaFin[3:5]),int(fechaFin[0:2]))
+    if estado!="aprobado" and estado != "rechazado" and estado != "pendiente" and estado != "despachado" and estado != "entregado":
+        print("INGRESE UN ESTADO VALIDO")
+        return
+    try:
+        fechaInicio = dt.date(int(fechaInicio[6:10]),int(fechaInicio[3:5]),int(fechaInicio[0:2]))
+        fechaFin = dt.date(int(fechaFin[6:10]),int(fechaFin[3:5]),int(fechaFin[0:2]))
+    except:
+        print("INGRESE UN CONJUNTO DE FECHAS VALIDAS")
+        return
 
     listPCompuestos = PedidoCompuesto.select().where(PedidoCompuesto.fecha<fechaFin, PedidoCompuesto.fecha>fechaInicio)
     listPSimples = PedidoSimple.select().where(PedidoSimple.estado == estado, PedidoSimple.fecha<fechaFin, PedidoSimple.fecha>fechaInicio, PedidoSimple.nro_pedido_compuesto == None)
@@ -224,8 +233,12 @@ def listarPedidosPorEstadoYFechas(estado, fechaInicio, fechaFin):
 
 
 def listarPedidosPorFechas(fechaInicio, fechaFin):
-    fechaInicio = dt.date(int(fechaInicio[6:10]),int(fechaInicio[3:5]),int(fechaInicio[0:2]))
-    fechaFin = dt.date(int(fechaFin[6:10]),int(fechaFin[3:5]),int(fechaFin[0:2]))
+    try:
+        fechaInicio = dt.date(int(fechaInicio[6:10]),int(fechaInicio[3:5]),int(fechaInicio[0:2]))
+        fechaFin = dt.date(int(fechaFin[6:10]),int(fechaFin[3:5]),int(fechaFin[0:2]))
+    except:
+        print("INGRESE UN CONJUNTO DE FECHAS VALIDAS")
+        return
 
     listPCompuestos = PedidoCompuesto.select().where(PedidoCompuesto.fecha<fechaFin, PedidoCompuesto.fecha>fechaInicio)
     listPSimples = PedidoSimple.select().where(PedidoSimple.fecha<fechaFin, PedidoSimple.fecha>fechaInicio, PedidoSimple.nro_pedido_compuesto == None)
@@ -252,6 +265,12 @@ def listarPedidosPorFechas(fechaInicio, fechaFin):
         x = x + 1
 
 def listarPedidosDeCliente(dni):
+    try:
+        Cliente.get_by_id(dni)
+    except:
+        print("NO EXISTE ESE CLIENTE")
+        return
+        
     listPCompuestos = PedidoCompuesto.select().where(PedidoCompuesto.dni_cliente == dni)
     listPSimples = PedidoSimple.select().where(PedidoSimple.dni_cliente == dni, PedidoSimple.nro_pedido_compuesto == None)
     
