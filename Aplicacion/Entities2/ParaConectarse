@@ -5,8 +5,8 @@ try:
 except:  
     print("Could not connect to MongoDB")
 
-mydatabase = client.pedidos   #base de datos
+mydatabase = client.mdbg5   #base de datos
 
 myCollection = mydatabase.pedidos   #esquema
 
-myCollection = mydatabase["Cliente"]    #tabla?
+#myCollection = mydatabase["Cliente"]    #tabla?
