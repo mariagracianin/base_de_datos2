@@ -8,7 +8,7 @@ import psycopg2
 from Entities.cliente import Cliente
 from Entities.cuenta import Cuenta
 from Entities.cuenta import Cuenta
-from Entities.tarjeta import Tarjeta
+from Entities.Tarjeta import Tarjeta
 from Entities.cobro import Cobro
 from Entities.pedidoCompuesto import PedidoCompuesto
 from Entities.pedidoSimple import PedidoSimple
@@ -59,12 +59,12 @@ def verClientesSQL():
 
 
 def altaCliente(dni1, nombre1, apellido1, celular1, mail1, departamento1, calle1, codigo_postal1, apartamento1, localidad1, numero_puerta1, nombre_usuario1):
-    query = Cliente.select().where(Cliente.dni == dni1)
-    seguir  = 0
-    if(query.exists()):
-        seguir  = 1
+    existe  = False
+    if(Cliente.get_or_none(Cliente.dni == dni1) != None):
+        existe  = True
+        print("Ya existe un cliente con ese DNI")
 
-    if(seguir == 0):
+    if(existe == False):
         try:
             guardar_cliente = Cliente.create(dni=dni1, nombre=nombre1, apellido=apellido1, celular=celular1, mail=mail1, departamento=departamento1, calle=calle1, codigo_postal=codigo_postal1, apartamento=apartamento1, localidad=localidad1, numero_puerta=numero_puerta1)
             guardar_cliente.save()
@@ -76,46 +76,30 @@ def altaCliente(dni1, nombre1, apellido1, celular1, mail1, departamento1, calle1
         return dni1, nombre1, apellido1, celular1, mail1,departamento1, calle1, codigo_postal1, apartamento1, localidad1, numero_puerta1, nombre_usuario1
 
 def altaCuenta(dni1, nombre_usuario1):
-
-    seguir = 0
-
-    if(Cliente.get_or_none(Cliente.dni_cliente == dni1) != None):
-        print("El dni no existe")
-        seguir = 1
-
-    if(seguir != 1):
-        day = datetime.now().day
-        month = datetime.now().month
-        year = datetime.now().year
-        try:
-            guardar_cuenta = Cuenta.create(dni_cliente = dni1, usuario = nombre_usuario1, fecha_creacion = dt.date(year,month,day))
-            print("Alta cuenta exitosa")
-        except Exception:
-            print("ERROR: alta cuenta")
+    day = datetime.now().day
+    month = datetime.now().month
+    year = datetime.now().year
+    try:
+        guardar_cuenta = Cuenta.create(dni_cliente = dni1, usuario = nombre_usuario1, fecha_creacion = dt.date(year,month,day))
+        print("Alta cuenta exitosa")
+    except Exception:
+        print("ERROR: alta cuenta")
 
 def bajaCliente(dni1):
     try:
-        Cliente.get_by_id(dni1)
-        bajaCuenta(dni1)
-        borrar_cliente = Cliente.delete().where(Cliente.dni==dni1)
-        borrar_cliente.execute()
+        cliente1 = Cliente.get_by_id(dni1)
+        cliente1.delete_instance(recursive=True)
+        #bajaCuenta(dni1)
+        #borrar_cliente = Cliente.delete_instance().where(Cliente.dni==dni1)
+        #borrar_cliente.execute()
         print("Baja cliente exitosa")
     except Exception as e:
         print(e)
         print("ERROR: baja cliente")
         print("Esta mal ingresada la cedula")
 
-def bajaCuenta(dni1):
-    try:
-        Cuenta.get(Cuenta.dni_cliente == dni1)
-        borrar_cuenta = Cuenta.delete().where(Cuenta.dni_cliente==dni1)
-        borrar_cuenta.execute()
-        print("Baja cuenta exitosa")
-    except Exception:
-        print("ERROR: baja cuenta")
-
 def altaTarjeta(numero_tarjeta1, tipo1, vencimiento1, emisor1, numero_cuenta1):
-    if Tarjeta.get_or_none(Tarjeta.numero_tarjeta == numero_tarjeta1):
+    if Tarjeta.get_or_none(Tarjeta.numero_tarjeta == numero_tarjeta1) != None:
         print("YA EXISTE UNA TARJETA CON ESE NUMERO")
         return
     print(vencimiento1[6:10])
@@ -129,12 +113,12 @@ def altaTarjeta(numero_tarjeta1, tipo1, vencimiento1, emisor1, numero_cuenta1):
         print("ERROR: alta tarjeta")
 
 def modificarCliente(dni, nuevoNombre, nuevoApellido, nuevoCelular, nuevoMail, nuevoDepartamento, nuevaCalle, nuevoCodigoPostal, nuevoApartamento, nuevaLocalidad, nuevaPuerta):
-    query = Cliente.sellect().where(Cliente.dni == dni)
-    seguir  = 0
+    query = Cliente.select().where(Cliente.dni == dni)
+    seguir  = False
     if(query.exists()):
-        seguir = 1
+        seguir = True
 
-    if(seguir == 1):
+    if(seguir == True):
         try:
             cliente = Cliente.get(Cliente.dni==dni)
             cliente.nombre = nuevoNombre
@@ -353,6 +337,33 @@ def saberEstadoPCompuesto(pedidoCompuesto):
     else:
         return "pendiente"
 
+def modificarEstadoPSimple(dni, nuevoNombre, nuevoApellido, nuevoCelular, nuevoMail, nuevoDepartamento, nuevaCalle, nuevoCodigoPostal, nuevoApartamento, nuevaLocalidad, nuevaPuerta):    
+    seguir  = False
+    if(Cliente.get_or_none(Cliente.dni==dni)):
+        seguir = True
+
+    if(seguir == True):
+        try:
+            cliente = Cliente.get(Cliente.dni==dni)
+            cliente.nombre = nuevoNombre
+            cliente.apellido = nuevoApellido
+            cliente.celular = nuevoCelular
+            cliente.mail = nuevoMail
+            cliente.departamento = nuevoDepartamento
+            cliente.calle = nuevaCalle
+            cliente.codigo_postal = nuevoCodigoPostal
+            cliente.apartamento = nuevoApartamento
+            cliente.localidad = nuevaLocalidad
+            cliente.numero_puerta = nuevaPuerta
+            cliente.save()
+            print("Modificacion exitosa")
+        except:
+            print(exception)
+            print("ERROR en la modificaion")
+            print("Esta mal ingresada la cedula")
+    else:
+        print("El cliente que queres modificar no existe")
+
 
 if __name__ == "__main__":
     print("----------------------------------------")
@@ -412,52 +423,55 @@ if __name__ == "__main__":
         elif(menu == "6"):
             print("--->Haga su pedido")
             dni_cliente = input("Ingrese su DNI: ")
-            sigo = input("Precione 1 si quiere agreagr un producto o  0 si ya termino su pedido: ")
-
-            day = datetime.now().day
-            month = datetime.now().month
-            year = datetime.now().year
-            date1 = dt.date(year,month,day)
-
-            #PedidoCompuesto.create(fecha = date1, canal_de_compra = "", dni_cliente = dni_cliente)
-            #pedidoCompuesto = PedidoCompuesto.get_or_none(PedidoCompuesto.dni_cliente == dni_cliente)
-
-            #pedido_simple = altaPedidoSimple("por confirmar", date1, "visa", dni_cliente, pedidoCompuesto.id)
-
-            pedido_simple = altaPedidoSimple("pendiente", date1, "visa", dni_cliente)
-            pedido_simple.save()
-
-            print(str(pedido_simple.id) + "---------------------------")
-
-            cantidad_productos = 0
-
-            while(sigo == "1" and cantidad_productos < 21):
-                codigo_producto = input("Numero del producto: ")
-                cantidad_del_producto = input("Cantidad del poducto que quiere llevar: ")
-                altaPedidoProducto(int(cantidad_del_producto), int(codigo_producto), pedido_simple )
-
-                cantidad_productos = cantidad_productos + int(cantidad_del_producto)
-
+            if(Cliente.get_or_none(Cliente.dni == dni_cliente) == None):
+                print("Ingrese un cliente valido para realizar un pedido")
+            else:
                 sigo = input("Precione 1 si quiere agreagr un producto o  0 si ya termino su pedido: ")
 
-            pedido_simple.precio_total = calcularPrecioTotal(pedido_simple)
-            pedido_simple.save()
+                day = datetime.now().day
+                month = datetime.now().month
+                year = datetime.now().year
+                date1 = dt.date(year,month,day)
 
-            if(cantidad_productos > 20):
-                print("excedio la cantidad de productos posibles")
-                borrar_pedido_simple = PedidoSimple.delete().where(PedidoSimple.id == pedido_simple.id)
-                borrar_pedido_simple.execute()
-                break
+                #PedidoCompuesto.create(fecha = date1, canal_de_compra = "", dni_cliente = dni_cliente)
+                #pedidoCompuesto = PedidoCompuesto.get_or_none(PedidoCompuesto.dni_cliente == dni_cliente)
 
-            cuenta = Cuenta.get_or_none(Cuenta.dni_cliente == dni_cliente)
+                #pedido_simple = altaPedidoSimple("por confirmar", date1, "visa", dni_cliente, pedidoCompuesto.id)
 
-            cobro = Cobro.create(id_pedido = pedido_simple.id, numero_cuenta = cuenta.numero_cuenta, aprobado = False, nro_aprovacion = 0)
+                pedido_simple = altaPedidoSimple("pendiente", date1, "visa", dni_cliente)
+                pedido_simple.save()
 
-            tarjeta = Tarjeta.get_or_none(Tarjeta.numero_cuenta == cuenta.numero_cuenta)
+                print(str(pedido_simple.id) + "---------------------------")
 
-            if(tarjeta != None):  # hay q ver que devuelve un get que no encontro nada
-                cobro.aprobado = True
-                print("Su pedido fue recivido con excito")
+                cantidad_productos = 0
+
+                while(sigo == "1" and cantidad_productos < 21):
+                    codigo_producto = input("Numero del producto: ")
+                    cantidad_del_producto = input("Cantidad del poducto que quiere llevar: ")
+                    altaPedidoProducto(int(cantidad_del_producto), int(codigo_producto), pedido_simple )
+
+                    cantidad_productos = cantidad_productos + int(cantidad_del_producto)
+
+                    sigo = input("Precione 1 si quiere agreagr un producto o  0 si ya termino su pedido: ")
+
+                pedido_simple.precio_total = calcularPrecioTotal(pedido_simple)
+                pedido_simple.save()
+
+                if(cantidad_productos > 20):
+                    print("excedio la cantidad de productos posibles")
+                    borrar_pedido_simple = PedidoSimple.delete().where(PedidoSimple.id == pedido_simple.id)
+                    borrar_pedido_simple.execute()
+                    break
+
+                cuenta = Cuenta.get_or_none(Cuenta.dni_cliente == dni_cliente)
+
+                cobro = Cobro.create(id_pedido = pedido_simple.id, numero_cuenta = cuenta.numero_cuenta, aprobado = False, nro_aprovacion = 0)
+
+                tarjeta = Tarjeta.get_or_none(Tarjeta.numero_cuenta == cuenta.numero_cuenta)
+
+                if(tarjeta != None):  # hay q ver que devuelve un get que no encontro nada
+                    cobro.aprobado = True
+                    print("Su pedido fue recibido con exito")
 
         elif(menu == "5"):
             print( "--->Agruegue el producto que quiera agregar:")

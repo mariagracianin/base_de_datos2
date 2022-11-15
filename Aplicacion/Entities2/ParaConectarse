@@ -9,4 +9,6 @@ mydatabase = db.mdbg5   #base de datos
 
 myCollection = mydatabase.pedidos   #esquema
 
+print(mydatabase.find({}))
+
 #myCollection = mydatabase["Cliente"]    #tabla?
