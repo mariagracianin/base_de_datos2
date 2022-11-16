@@ -180,6 +180,26 @@ def calcularPrecioTotal(pedidoSimple):
             return "no hay suficiente stock"
 
     return precioTotal
+def calcularPrecioTotalMongoDB(JSONproductoCantidad):
+    precioTotal = 0
+
+    for i in JSONproductoCantidad:
+        json1 = JSONproductoCantidad.get(i)
+        directory = json.load(json1)
+        codigoProducto = directory.get("codigoProducto")
+
+        producto = Producto.get(Producto.codigo_producto == codigoProducto)
+
+        if(producto.stock > directory.get("cantidad")):
+
+            precioTotal = precioTotal + (producto.precio)*(directory.get("cantidad"))
+            producto.stock = producto.stock - directory.get("cantidad")
+            producto.save()
+
+        else:
+            return "no hay suficiente stock"
+
+    return precioTotal
 
 def listarClientes():
     listClientes = Cliente.select()
@@ -337,7 +357,7 @@ def saberEstadoPCompuesto(pedidoCompuesto):
     else:
         return "pendiente"
 
-def modificarEstadoPSimple(dni, nuevoNombre, nuevoApellido, nuevoCelular, nuevoMail, nuevoDepartamento, nuevaCalle, nuevoCodigoPostal, nuevoApartamento, nuevaLocalidad, nuevaPuerta):    
+def modificarEstadoPSimple(dni, nuevoNombre, nuevoApellido, nuevoCelular, nuevoMail, nuevoDepartamento, nuevaCalle, nuevoCodigoPostal, nuevoApartamento, nuevaLocalidad, nuevaPuerta):
     seguir  = False
     if(Cliente.get_or_none(Cliente.dni==dni)):
         seguir = True
@@ -363,6 +383,20 @@ def modificarEstadoPSimple(dni, nuevoNombre, nuevoApellido, nuevoCelular, nuevoM
             print("Esta mal ingresada la cedula")
     else:
         print("El cliente que queres modificar no existe")
+
+def generarJSONproductoCantidad(codigoProducto, cantidad):
+    productoCantidad = {"codigoProducto": codigoProducto, "cantidad": cantidad}
+    jsonProducto = json.dumps(productoCantidad, indent=4)
+
+    return jsonProducto
+
+def generadorPedidoSimple(precio, estado, canal_de_compra, dni_cliente, listaProductos, nro_pedido_dompuesto = None):
+
+    pedidoSimple = {"precio_total": precio, "estado": estado, "fecha": "31/07/2022",
+                    "canal_de_compra": canal_de_compra, "nro_pedido_compuesto": nro_pedido_dompuesto,
+                    "dni_cliente": dni_cliente, "listaProductos": listaProductos}
+    jsonString = json.dumps(pedidoSimple, indent=4)
+    db.insert_one(jsonString)
 
 
 if __name__ == "__main__":
@@ -438,30 +472,44 @@ if __name__ == "__main__":
 
                 #pedido_simple = altaPedidoSimple("por confirmar", date1, "visa", dni_cliente, pedidoCompuesto.id)
 
-                pedido_simple = altaPedidoSimple("pendiente", date1, "visa", dni_cliente)
-                pedido_simple.save()
+#            pedido_simple = altaPedidoSimple("pendiente", date1, "visa", dni_cliente)
+#            pedido_simple.save()
 
-                print(str(pedido_simple.id) + "---------------------------")
+#            print(str(pedido_simple.id) + "---------------------------")
 
-                cantidad_productos = 0
+            cantidad_productos = 0
+            listaJSONsProductoCantidad = []
 
-                while(sigo == "1" and cantidad_productos < 21):
-                    codigo_producto = input("Numero del producto: ")
-                    cantidad_del_producto = input("Cantidad del poducto que quiere llevar: ")
-                    altaPedidoProducto(int(cantidad_del_producto), int(codigo_producto), pedido_simple )
+            while(sigo == "1" and cantidad_productos < 21):
+                codigo_producto = input("Numero del producto: ")
+                cantidad_del_producto = input("Cantidad del poducto que quiere llevar: ")
+                # PARA POSTGRES
+                # -------------------------------------------------------------------
+#                altaPedidoProducto(int(cantidad_del_producto), int(codigo_producto), pedido_simple )
 
-                    cantidad_productos = cantidad_productos + int(cantidad_del_producto)
+#                cantidad_productos = cantidad_productos + int(cantidad_del_producto)
 
-                    sigo = input("Precione 1 si quiere agreagr un producto o  0 si ya termino su pedido: ")
+#                sigo = input("Precione 1 si quiere agreagr un producto o  0 si ya termino su pedido: ")
+                #---------------------------------------------------------------------
+                #PARA MONGODB
+                jsonProductoCantidad = generarJSONproductoCantidad(codigo_producto,int(cantidad_del_producto))
+                listaJSONsProductoCantidad.append(jsonProductoCantidad)
+                cantidad_productos = cantidad_productos + int(cantidad_del_producto)
 
-                pedido_simple.precio_total = calcularPrecioTotal(pedido_simple)
-                pedido_simple.save()
+#            pedido_simple.precio_total = calcularPrecioTotal(pedido_simple)
+#            pedido_simple.save()
 
-                if(cantidad_productos > 20):
-                    print("excedio la cantidad de productos posibles")
-                    borrar_pedido_simple = PedidoSimple.delete().where(PedidoSimple.id == pedido_simple.id)
-                    borrar_pedido_simple.execute()
-                    break
+            precioTotal = calcularPrecioTotalMongoDB(listaJSONsProductoCantidad)
+
+
+            if(cantidad_productos > 20):
+                print("excedio la cantidad de productos posibles")
+#                borrar_pedido_simple = PedidoSimple.delete().where(PedidoSimple.id == pedido_simple.id)
+#                borrar_pedido_simple.execute()
+#                break
+
+            generadorPedidoSimple(precioTotal,"algo", "algo", int(dni_cliente), listaJSONsProductoCantidad)
+            pedido_simple = db.find({"dni_cliente":int(dni_cliente),"listaProductos": listaJSONsProductoCantidad})
 
                 cuenta = Cuenta.get_or_none(Cuenta.dni_cliente == dni_cliente)
 
@@ -469,9 +517,9 @@ if __name__ == "__main__":
 
                 tarjeta = Tarjeta.get_or_none(Tarjeta.numero_cuenta == cuenta.numero_cuenta)
 
-                if(tarjeta != None):  # hay q ver que devuelve un get que no encontro nada
-                    cobro.aprobado = True
-                    print("Su pedido fue recibido con exito")
+            if(tarjeta != None):  # hay q ver que devuelve un get que no encontro nada
+#                cobro.aprobado = True
+                print("Su pedido fue recivido con excito")
 
         elif(menu == "5"):
             print( "--->Agruegue el producto que quiera agregar:")
