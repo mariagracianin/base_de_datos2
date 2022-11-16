@@ -14,7 +14,9 @@ from Entities.pedidoCompuesto import PedidoCompuesto
 from Entities.pedidoSimple import PedidoSimple
 from Entities.producto import Producto
 from Entities.productoPedido import productosPedido
+import json
 
+from pymongo import MongoClient
 
 
 #db = PostgresqlDatabase('BaseDeDatos2', host='localhost', port=5432, user='postgres', password='Igna.soler10')
@@ -24,6 +26,16 @@ from Entities.productoPedido import productosPedido
 db = psycopg2.connect(database = 'dbd2', host='localhost', port=8888, user='dbd2g5', password='dbd2#G5')
 db.autocommit = True
 cursor = db.cursor()
+
+try:
+    cliente = MongoClient('mongodb://localhost:27017')
+    print("Connected successfully")
+except:  
+    print("Could not connect to MongoDB")
+
+mydatabase = cliente.mdbg5   #base de datos
+
+myCollection = mydatabase.pedidos   #esquema
 
 
 def mostrarMenu():
@@ -183,9 +195,10 @@ def calcularPrecioTotal(pedidoSimple):
 def calcularPrecioTotalMongoDB(JSONproductoCantidad):
     precioTotal = 0
 
-    for i in JSONproductoCantidad:
-        json1 = JSONproductoCantidad.get(i)
-        directory = json.load(json1)
+    for json1 in JSONproductoCantidad:
+        #json1 = JSONproductoCantidad[i]
+        print(json1)
+        directory = json.loads(json1)
         codigoProducto = directory.get("codigoProducto")
 
         producto = Producto.get(Producto.codigo_producto == codigoProducto)
@@ -395,8 +408,14 @@ def generadorPedidoSimple(precio, estado, canal_de_compra, dni_cliente, listaPro
     pedidoSimple = {"precio_total": precio, "estado": estado, "fecha": "31/07/2022",
                     "canal_de_compra": canal_de_compra, "nro_pedido_compuesto": nro_pedido_dompuesto,
                     "dni_cliente": dni_cliente, "listaProductos": listaProductos}
-    jsonString = json.dumps(pedidoSimple, indent=4)
-    db.insert_one(jsonString)
+    #jsonString = json.dumps(pedidoSimple, indent=4)
+    print("-------------------")
+    print(type(pedidoSimple))
+    myCollection.insert_many([pedidoSimple])
+
+#def listarPedidosPorEstadoYFechasMONGO(estado, fechaInicio, fechaFin): 
+    #lista =                  pedido_simple = myCollection.find_one({"dni_cliente":int(dni_cliente),"listaProductos": listaJSONsProductoCantidad})
+
 
 
 if __name__ == "__main__":
@@ -472,54 +491,54 @@ if __name__ == "__main__":
 
                 #pedido_simple = altaPedidoSimple("por confirmar", date1, "visa", dni_cliente, pedidoCompuesto.id)
 
-#            pedido_simple = altaPedidoSimple("pendiente", date1, "visa", dni_cliente)
-#            pedido_simple.save()
+                #pedido_simple = altaPedidoSimple("pendiente", date1, "visa", dni_cliente)
+                #pedido_simple.save()
 
-#            print(str(pedido_simple.id) + "---------------------------")
+                #print(str(pedido_simple.id) + "---------------------------")
 
-            cantidad_productos = 0
-            listaJSONsProductoCantidad = []
+                cantidad_productos = 0
+                listaJSONsProductoCantidad = []
 
-            while(sigo == "1" and cantidad_productos < 21):
-                codigo_producto = input("Numero del producto: ")
-                cantidad_del_producto = input("Cantidad del poducto que quiere llevar: ")
-                # PARA POSTGRES
-                # -------------------------------------------------------------------
-#                altaPedidoProducto(int(cantidad_del_producto), int(codigo_producto), pedido_simple )
+                while(sigo == "1" and cantidad_productos < 21):
+                    codigo_producto = input("Numero del producto: ")
+                    cantidad_del_producto = input("Cantidad del poducto que quiere llevar: ")
+                    # PARA POSTGRES
+                    # -------------------------------------------------------------------
+                    #altaPedidoProducto(int(cantidad_del_producto), int(codigo_producto), pedido_simple )
 
-#                cantidad_productos = cantidad_productos + int(cantidad_del_producto)
+                    #cantidad_productos = cantidad_productos + int(cantidad_del_producto)
 
-#                sigo = input("Precione 1 si quiere agreagr un producto o  0 si ya termino su pedido: ")
-                #---------------------------------------------------------------------
-                #PARA MONGODB
-                jsonProductoCantidad = generarJSONproductoCantidad(codigo_producto,int(cantidad_del_producto))
-                listaJSONsProductoCantidad.append(jsonProductoCantidad)
-                cantidad_productos = cantidad_productos + int(cantidad_del_producto)
+                    sigo = input("Precione 1 si quiere agreagr un producto o  0 si ya termino su pedido: ")
+                    #---------------------------------------------------------------------
+                    #PARA MONGODB
+                    jsonProductoCantidad = generarJSONproductoCantidad(codigo_producto,int(cantidad_del_producto))
+                    listaJSONsProductoCantidad.append(jsonProductoCantidad)
+                    cantidad_productos = cantidad_productos + int(cantidad_del_producto)
 
-#            pedido_simple.precio_total = calcularPrecioTotal(pedido_simple)
-#            pedido_simple.save()
+                    # pedido_simple.precio_total = calcularPrecioTotal(pedido_simple)
+                    #pedido_simple.save()
 
-            precioTotal = calcularPrecioTotalMongoDB(listaJSONsProductoCantidad)
+                precioTotal = calcularPrecioTotalMongoDB(listaJSONsProductoCantidad)
 
 
-            if(cantidad_productos > 20):
-                print("excedio la cantidad de productos posibles")
-#                borrar_pedido_simple = PedidoSimple.delete().where(PedidoSimple.id == pedido_simple.id)
-#                borrar_pedido_simple.execute()
-#                break
+                if(cantidad_productos > 20):
+                    print("excedio la cantidad de productos posibles")
+                #borrar_pedido_simple = PedidoSimple.delete().where(PedidoSimple.id == pedido_simple.id)
+                #borrar_pedido_simple.execute()
+                #break
 
-            generadorPedidoSimple(precioTotal,"algo", "algo", int(dni_cliente), listaJSONsProductoCantidad)
-            pedido_simple = db.find({"dni_cliente":int(dni_cliente),"listaProductos": listaJSONsProductoCantidad})
+                generadorPedidoSimple(precioTotal,"algo", "algo", int(dni_cliente), listaJSONsProductoCantidad)
+                pedido_simple = myCollection.find_one({"dni_cliente":int(dni_cliente),"listaProductos": listaJSONsProductoCantidad})
 
                 cuenta = Cuenta.get_or_none(Cuenta.dni_cliente == dni_cliente)
 
-                cobro = Cobro.create(id_pedido = pedido_simple.id, numero_cuenta = cuenta.numero_cuenta, aprobado = False, nro_aprovacion = 0)
+                cobro = Cobro.create(id_pedido = str(pedido_simple["_id"]), numero_cuenta = cuenta.numero_cuenta, aprobado = False, nro_aprovacion = 0)
 
                 tarjeta = Tarjeta.get_or_none(Tarjeta.numero_cuenta == cuenta.numero_cuenta)
 
-            if(tarjeta != None):  # hay q ver que devuelve un get que no encontro nada
-#                cobro.aprobado = True
-                print("Su pedido fue recivido con excito")
+                if(tarjeta != None):  # hay q ver que devuelve un get que no encontro nada
+                    #cobro.aprobado = True
+                    print("Su pedido fue recibido con exito")
 
         elif(menu == "5"):
             print( "--->Agruegue el producto que quiera agregar:")

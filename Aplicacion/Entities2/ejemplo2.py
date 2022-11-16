@@ -20,6 +20,6 @@ def generadorPedidoSimple(precio, estado,canal_de_compra, nro_pedido_dompuesto, 
 
 
 mydb.insert_one
-mydb.insert_one(jsonString)
+#mydb.insert_one(jsonString)
 
 
