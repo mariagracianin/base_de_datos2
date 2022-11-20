@@ -1,10 +1,22 @@
 import json
 from pymongo import MongoClient
 
-print("-----------------------------")
-db = MongoClient('mongodb://localhost:27017')
+#print("-----------------------------")
+#db = MongoClient('mongodb://localhost:27017')
 
-mydb = db.mdbg5.pedidos
+#mydb = db.mdbg5.pedidos
+
+
+from pymongo import MongoClient
+try:
+    client = MongoClient('localhost' , 27017)
+    print("Connected successfully")
+except:  
+    print("Could not connect to MongoDB")
+
+mydatabase = client.pedidos   #base de datos
+
+myCollection = mydatabase.pedidos   #esquema
 
 pedidoSimple = {"precio_total": 10, 
                 "estado": "pendiente", 
@@ -20,4 +32,4 @@ pedidoSimple2 = {"precio_total": 12,
                 "dni_cliente": 1
                 }
 
-mydb.insert_many([pedidoSimple,pedidoSimple2])
+myCollection.insert_many([pedidoSimple,pedidoSimple2])
