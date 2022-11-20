@@ -54,6 +54,9 @@ def mostrarMenu():
     print("12) Listar pedido por estado y fechas")
     print("13) Listar pedidos entre fechas")
     print("14) Listar pedidos de un cliente dado")
+    print("15) Listar pedidos por estado y fechas MONGO")
+    print("16) Listar pedidos entre fechas MONGO")
+    print("17) Listar pedidos de un cliente dado MONGO")
 
     num =input("NUMERO DEL MENU: ")
     return num
@@ -413,10 +416,17 @@ def generadorPedidoSimple(precio, estado, canal_de_compra, dni_cliente, listaPro
     print(type(pedidoSimple))
     myCollection.insert_many([pedidoSimple])
 
-#def listarPedidosPorEstadoYFechasMONGO(estado, fechaInicio, fechaFin): 
-    #lista =                  pedido_simple = myCollection.find_one({"dni_cliente":int(dni_cliente),"listaProductos": listaJSONsProductoCantidad})
+def listarPedidosPorEstadoYFechasMONGO(estado, fechaInicio, fechaFin): 
+    pedidoList = list(myCollection.find({"estado":estado,"listaProductos": listaJSONsProductoCantidad}))
 
+def listarPedidosPorFechasMONGO(fechaInicio, fechaFin):
+    x = 0
 
+def listarPedidosDeClienteMONGO(dni):
+    pedidoList =list(myCollection.find({"dni_cliente":dni}))
+    for pedido in pedidoList:
+        print("LISTA PEDIDOS: ")
+        print("ID P.SIMPLE: " + str(pedido["_id"]))
 
 if __name__ == "__main__":
     print("----------------------------------------")
@@ -615,4 +625,25 @@ if __name__ == "__main__":
             print("ingrese los siguientes datos")
             dni =  input("DNI: ")
             listarPedidosDeCliente(dni)
+
+        elif(menu=="15"):
+            print("--->LISTAR PEDIDOS ENTRE FECHAS Y SEGUN ESTADO: ")
+            print("ingrese los siguientes datos")
+            estado = input("ESTADO: ")
+            fechaInicio =  input("FECHA INICIO: ")
+            fechaFin =  input("FECHA FIN: ")
+            listarPedidosPorEstadoYFechasMONGO(estado, fechaInicio, fechaFin)
+
+        elif(menu=="16"):
+            print("--->LISTAR PEDIDOS ENTRE FECHAS: ")
+            print("ingrese los siguientes datos")
+            fechaInicio =  input("FECHA INICIO: ")
+            fechaFin =  input("FECHA FIN: ")
+            listarPedidosPorFechasMONGO(fechaInicio, fechaFin)
+
+        elif(menu=="17"):
+            print("--->LISTAR PEDIDOS DE UN CLIENTE: ")
+            print("ingrese los siguientes datos")
+            dni =  input("DNI: ")
+            listarPedidosDeClienteMONGO(dni)
         
