@@ -411,37 +411,44 @@ def generarJSONproductoCantidad(codigoProducto, cantidad):
 
 def generadorPedidoSimple(precio, estado, canal_de_compra, dni_cliente, listaProductos, nro_pedido_dompuesto = None):
 
-    day = datetime.now().day
-    month = datetime.now().month
-    year = datetime.now().year
-    date1 = dt.date(year,month,day)
-
     pedidoSimple = {"precio_total": precio, 
                     "estado": estado, 
-                    "fecha": "31/07/2022",
-                    "canal_de_compra": canal_de_compra, 
-                    "nro_pedido_compuesto": nro_pedido_dompuesto,
+                    "fecha_simple": datetime.today().replace(microsecond=0),
+                    "canal_de_compra": canal_de_compra,
                     "dni_cliente": dni_cliente, 
                     "listaProductos": listaProductos
                     }
-    
-    print(pedidoSimple)
-    #jsonString = json.dumps(pedidoSimple, indent=4)
-    print("-------------------")
-    print(type(pedidoSimple))
     myCollection.insert_one(pedidoSimple)
 
 def listarPedidosPorEstadoYFechasMONGO(estado, fechaInicio, fechaFin): 
-    pedidoList = list(myCollection.find({"estado":estado,"listaProductos": listaJSONsProductoCantidad}))
+    fechaInicio = datetime(int(fechaInicio[6:10]),int(fechaInicio[3:5]),int(fechaInicio[0:2]),0,0,0,0)
+    fechaFin = datetime(int(fechaFin[6:10]),int(fechaFin[3:5]),int(fechaFin[0:2]),0,0,0)
 
-def listarPedidosPorFechasMONGO(fechaInicio, fechaFin):
-    x = 0
 
-def listarPedidosDeClienteMONGO(dni):
-    pedidoList =list(myCollection.find({"dni_cliente":dni}))
+    criteria =  {"$and": [{"fecha": {"$gte": fechaInicio, "$lte": fechaFin}}, {"estado": estado}]}
+    pedidoList = list(myCollection.find(criteria))
     for pedido in pedidoList:
         print("LISTA PEDIDOS: ")
-        print("ID P.SIMPLE: " + str(pedido["_id"]))
+        print("ID PEDIDO: " + str(pedido["_id"]))
+        print("ESTADO: " + str(pedido["fecha"]))
+
+def listarPedidosPorFechasMONGO(fechaInicio, fechaFin):
+    fechaInicio = datetime(int(fechaInicio[6:10]),int(fechaInicio[3:5]),int(fechaInicio[0:2]),0,0,0,0)
+    fechaFin = datetime(int(fechaFin[6:10]),int(fechaFin[3:5]),int(fechaFin[0:2]),0,0,0)
+    print(fechaInicio)
+    print(fechaFin)
+    criteria =  {"fecha": {"$gte": fechaInicio, "$lte": fechaFin}}
+    pedidoList = list(myCollection.find(criteria))
+    for pedido in pedidoList:
+        print("LISTA PEDIDOS: ")
+        print("ID PEDIDO: " + str(pedido["_id"]))
+        print("FECHA: " + str(pedido["fecha"]))
+
+def listarPedidosDeClienteMONGO(dni):
+    pedidoList = list(myCollection.find({"dni_cliente":int(dni)}))
+    for pedido in pedidoList:
+        print("LISTA PEDIDOS: ")
+        print("CLIENTE: " + str(pedido["dni_cliente"]))
 
 if __name__ == "__main__":
     print("----------------------------------------")
@@ -626,6 +633,7 @@ if __name__ == "__main__":
 
         elif(menu=="12"):
             print("--->LISTAR PEDIDOS ENTRE FECHAS Y SEGUN ESTADO: ")
+            print("Ingresar fecha en formato dd/mm/yyyy: ejemplo: 08/09/2022")
             print("ingrese los siguientes datos")
             estado = input("ESTADO: ")
             fechaInicio =  input("FECHA INICIO: ")
@@ -635,6 +643,7 @@ if __name__ == "__main__":
         elif(menu=="13"):
             print("--->LISTAR PEDIDOS ENTRE FECHAS: ")
             print("ingrese los siguientes datos")
+            print("Ingresar fecha en formato dd/mm/yyyy: ejemplo: 08/09/2022")
             fechaInicio =  input("FECHA INICIO: ")
             fechaFin =  input("FECHA FIN: ")
             listarPedidosPorFechas(fechaInicio, fechaFin)
@@ -647,6 +656,8 @@ if __name__ == "__main__":
 
         elif(menu=="15"):
             print("--->LISTAR PEDIDOS ENTRE FECHAS Y SEGUN ESTADO: ")
+            print("Ingresar fecha en formato dd/mm/yyyy: ejemplo: 08/09/2022")
+
             print("ingrese los siguientes datos")
             estado = input("ESTADO: ")
             fechaInicio =  input("FECHA INICIO: ")
@@ -655,6 +666,7 @@ if __name__ == "__main__":
 
         elif(menu=="16"):
             print("--->LISTAR PEDIDOS ENTRE FECHAS: ")
+            print("Ingresar fecha en formato dd/mm/yyyy: ejemplo: 08/09/2022")
             print("ingrese los siguientes datos")
             fechaInicio =  input("FECHA INICIO: ")
             fechaFin =  input("FECHA FIN: ")
