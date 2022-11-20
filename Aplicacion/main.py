@@ -155,12 +155,15 @@ def modificarCliente(dni, nuevoNombre, nuevoApellido, nuevoCelular, nuevoMail, n
     else:
         print("El cliente que queres modificar no existe")
 
-def ingresarStock(codigo_producto, stock ,precio = None, nombre = None, qr = "1"):
+def ingresarStock(codigo_producto, stock, precio = None, nombre = None, qr = "1"):
     if (Producto.get_or_none(Producto.codigo_producto == codigo_producto) == None):
         nuevoProducto = Producto.create(codigo_producto = codigo_producto, precio = precio, nombre = nombre, stock = stock, qr = qr)
         nuevoProducto.save()
     else:
-        (Producto.get_or_none(Producto.codigo_producto == codigo_producto)).stock = stock + (Producto.get_or_none(Producto.codigo_producto == codigo_producto))
+        producto = Producto.get_or_none(Producto.codigo_producto == codigo_producto)
+        producto.stock = stock + producto.stock
+        producto.save()
+
 
 def altaPedidoProducto(cantidad, codigo_producto, id_pedido_simple):
     nuevoPedidoProducto = productosPedido.create(cantidad = cantidad, codigo_producto = codigo_producto, id_pedido_simple = id_pedido_simple)
@@ -408,13 +411,25 @@ def generarJSONproductoCantidad(codigoProducto, cantidad):
 
 def generadorPedidoSimple(precio, estado, canal_de_compra, dni_cliente, listaProductos, nro_pedido_dompuesto = None):
 
-    pedidoSimple = {"precio_total": precio, "estado": estado, "fecha": "31/07/2022",
-                    "canal_de_compra": canal_de_compra, "nro_pedido_compuesto": nro_pedido_dompuesto,
-                    "dni_cliente": dni_cliente, "listaProductos": listaProductos}
+    day = datetime.now().day
+    month = datetime.now().month
+    year = datetime.now().year
+    date1 = dt.date(year,month,day)
+
+    pedidoSimple = {"precio_total": precio, 
+                    "estado": estado, 
+                    "fecha": "31/07/2022",
+                    "canal_de_compra": canal_de_compra, 
+                    "nro_pedido_compuesto": nro_pedido_dompuesto,
+                    "dni_cliente": dni_cliente, 
+                    "listaProductos": listaProductos
+                    }
+    
+    print(pedidoSimple)
     #jsonString = json.dumps(pedidoSimple, indent=4)
     print("-------------------")
     print(type(pedidoSimple))
-    myCollection.insert_many([pedidoSimple])
+    myCollection.insert_one(pedidoSimple)
 
 def listarPedidosPorEstadoYFechasMONGO(estado, fechaInicio, fechaFin): 
     pedidoList = list(myCollection.find({"estado":estado,"listaProductos": listaJSONsProductoCantidad}))
@@ -484,12 +499,12 @@ if __name__ == "__main__":
             altaTarjeta(numero_tarjeta1, tipo1, vencimiento1, emisor1, numero_cuenta1)
 
         elif(menu == "6"):
-            print("--->Haga su pedido")
+            print("--->HAGA SU PEDIDO: ")
             dni_cliente = input("Ingrese su DNI: ")
             if(Cliente.get_or_none(Cliente.dni == dni_cliente) == None):
                 print("Ingrese un cliente valido para realizar un pedido")
             else:
-                sigo = input("Precione 1 si quiere agreagr un producto o  0 si ya termino su pedido: ")
+                sigo = input("Precione 1 si quiere agreagar un producto o  0 si ya termino su pedido: ")
 
                 day = datetime.now().day
                 month = datetime.now().month
@@ -518,26 +533,29 @@ if __name__ == "__main__":
 
                     #cantidad_productos = cantidad_productos + int(cantidad_del_producto)
 
-                    sigo = input("Precione 1 si quiere agreagr un producto o  0 si ya termino su pedido: ")
+                    sigo = input("Precione 1 si quiere agreagar un producto o  0 si ya termino su pedido: ")
                     #---------------------------------------------------------------------
                     #PARA MONGODB
                     jsonProductoCantidad = generarJSONproductoCantidad(codigo_producto,int(cantidad_del_producto))
-                    listaJSONsProductoCantidad.append(jsonProductoCantidad)
+                    
                     cantidad_productos = cantidad_productos + int(cantidad_del_producto)
+                    if(cantidad_productos > 20):
+                        print("excedio la cantidad de productos posibles")
+                    else:
+                        listaJSONsProductoCantidad.append(jsonProductoCantidad)
 
                     # pedido_simple.precio_total = calcularPrecioTotal(pedido_simple)
                     #pedido_simple.save()
 
                 precioTotal = calcularPrecioTotalMongoDB(listaJSONsProductoCantidad)
 
-
-                if(cantidad_productos > 20):
-                    print("excedio la cantidad de productos posibles")
+                #if(cantidad_productos > 20):
+                #   print("excedio la cantidad de productos posibles")
                 #borrar_pedido_simple = PedidoSimple.delete().where(PedidoSimple.id == pedido_simple.id)
                 #borrar_pedido_simple.execute()
                 #break
 
-                generadorPedidoSimple(precioTotal,"algo", "algo", int(dni_cliente), listaJSONsProductoCantidad)
+                generadorPedidoSimple(precioTotal,"pendiente", "canal_de_compra_X", int(dni_cliente), listaJSONsProductoCantidad)
                 pedido_simple = myCollection.find_one({"dni_cliente":int(dni_cliente),"listaProductos": listaJSONsProductoCantidad})
 
                 cuenta = Cuenta.get_or_none(Cuenta.dni_cliente == dni_cliente)
@@ -551,7 +569,7 @@ if __name__ == "__main__":
                     print("Su pedido fue recibido con exito")
 
         elif(menu == "5"):
-            print( "--->Agruegue el producto que quiera agregar:")
+            print( "--->AGREGAR PRODUCTOS Y STOCK:")
 
             numero_producto = input ("Ingrese numero de producto: ")
             stock = input("Ingrese la cantidad de stock: ")
@@ -566,6 +584,7 @@ if __name__ == "__main__":
                 ingresarStock(int(numero_producto), int(stock), int(precio), nombre)
 
         elif(menu == "7"):
+            print("--->AGREGAR PEDIDO COMPUESTO: ")
             dni_cliente = input("Ingrese su DNI: ")
 
             paso = "1"
