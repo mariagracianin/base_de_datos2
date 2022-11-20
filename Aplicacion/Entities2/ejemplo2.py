@@ -1,7 +1,9 @@
 import json
 from pymongo import MongoClient
+from datetime import datetime
+import datetime as dt
 
-#print("-----------------------------")
+print("-----------------------------")
 #db = MongoClient('mongodb://localhost:27017')
 
 #mydb = db.mdbg5.pedidos
@@ -9,27 +11,70 @@ from pymongo import MongoClient
 
 from pymongo import MongoClient
 try:
-    client = MongoClient('localhost' , 27017)
+    cliente = MongoClient('mongodb://localhost:27017')
     print("Connected successfully")
 except:  
     print("Could not connect to MongoDB")
 
-mydatabase = client.pedidos   #base de datos
+mydatabase = cliente.mdbg5   #base de datos
 
 myCollection = mydatabase.pedidos   #esquema
 
-pedidoSimple = {"precio_total": 10, 
-                "estado": "pendiente", 
-                "fecha": "31/07/2022",
-                "canal_de_compra": "wbe", 
-                "dni_cliente": 1
+
+
+pedidoSimple1 = {"precio_total": 10, 
+                "estado": "aprobado", 
+                "fecha": datetime.today().replace(microsecond=0),
+                "canal_de_compra": "web",
+                "dni_cliente": 1, 
+                "listaProductos": [{
+                        "codigoProducto": 10,
+                        "cantidad": 2}]
                 }
 
-pedidoSimple2 = {"precio_total": 12, 
-                "estado": "pendiente", 
-                "fecha": "31/07/2022",
-                "canal_de_compra": "wbe", 
-                "dni_cliente": 1
+pedidoSimple2 = {"precio_total": 10, 
+                "estado": "aprobado", 
+                "fecha": datetime.today().replace(microsecond=0),
+                "canal_de_compra": "web",
+                "dni_cliente": 1, 
+                "listaProductos": [{
+                        "codigoProducto": 10,
+                        "cantidad": 5}]
                 }
 
-myCollection.insert_many([pedidoSimple,pedidoSimple2])
+pedidoSimple3 = {"precio_total": 10, 
+                "estado": "rechazado", 
+                "fecha": datetime.today().replace(microsecond=0),
+                "canal_de_compra": "web",
+                "dni_cliente": 1, 
+                "listaProductos": [{
+                        "codigoProducto": 10,
+                        "cantidad": 5}]
+                }
+
+pedidoCompuesto = {"fecha": datetime.today().replace(microsecond=0),
+                "canal_de_compra": "web",
+                "dni_cliente": 1, 
+                "pedidos_simples": [pedidoSimple1, pedidoSimple2, pedidoSimple3]
+                }
+
+pedidoSimple4 = {"precio_total": 15, 
+                "estado": "aprobado", 
+                "fecha": datetime.today().replace(microsecond=0),
+                "canal_de_compra": "web",
+                "dni_cliente": 1, 
+                "listaProductos": [{
+                        "codigoProducto": 20,
+                        "cantidad": 5}]
+                }
+
+myCollection.insert_one(pedidoCompuesto)
+
+#criteria = {"codigoProducto": 10}
+#criteria = {"fecha":"noTiene"}
+criteria = {"estado":"aprobado"}
+
+pedidoList = list(myCollection.find(criteria))
+
+for pedido in pedidoList:
+    print(pedidoList)

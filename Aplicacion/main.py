@@ -117,9 +117,6 @@ def altaTarjeta(numero_tarjeta1, tipo1, vencimiento1, emisor1, numero_cuenta1):
     if Tarjeta.get_or_none(Tarjeta.numero_tarjeta == numero_tarjeta1) != None:
         print("YA EXISTE UNA TARJETA CON ESE NUMERO")
         return
-    print(vencimiento1[6:10])
-    print(vencimiento1[3:5])
-    print(vencimiento1[0:2])
     vencimiento1 = dt.date(int(vencimiento1[6:10]),int(vencimiento1[3:5]),int(vencimiento1[0:2]))
     try:
         guardar_tarjeta = Tarjeta.create(numero_tarjeta = numero_tarjeta1, tipo = tipo1, emisor = emisor1, numero_cuenta = numero_cuenta1, vencimiento = vencimiento1)
@@ -198,6 +195,7 @@ def calcularPrecioTotal(pedidoSimple):
             return "no hay suficiente stock"
 
     return precioTotal
+
 def calcularPrecioTotalMongoDB(JSONproductoCantidad):
     precioTotal = 0
 
@@ -413,9 +411,9 @@ def generadorPedidoSimple(precio, estado, canal_de_compra, dni_cliente, listaPro
 
     pedidoSimple = {"precio_total": precio, 
                     "estado": estado, 
-                    "fecha_simple": datetime.today().replace(microsecond=0),
+                    "fecha": datetime.today().replace(microsecond=0),
                     "canal_de_compra": canal_de_compra,
-                    "dni_cliente": dni_cliente, 
+                    "dni_cliente": int(dni_cliente), 
                     "listaProductos": listaProductos
                     }
     myCollection.insert_one(pedidoSimple)
@@ -425,30 +423,88 @@ def listarPedidosPorEstadoYFechasMONGO(estado, fechaInicio, fechaFin):
     fechaFin = datetime(int(fechaFin[6:10]),int(fechaFin[3:5]),int(fechaFin[0:2]),0,0,0)
 
 
-    criteria =  {"$and": [{"fecha": {"$gte": fechaInicio, "$lte": fechaFin}}, {"estado": estado}]}
+    criteria =  {"fecha": {"$gte": fechaInicio, "$lte": fechaFin}}
     pedidoList = list(myCollection.find(criteria))
     for pedido in pedidoList:
+        size = 0
+        pedidos_simples = 0
+        try:
+            pedidos_simples = list(pedido["pedidos_simples"])
+            size = len(pedidos_simples)
+        except:
+            size = 0
+
         print("LISTA PEDIDOS: ")
-        print("ID PEDIDO: " + str(pedido["_id"]))
-        print("ESTADO: " + str(pedido["fecha"]))
+        if(size==0):
+            print("ID PEDIDO SIMPLE: " + str(pedido["_id"]))  
+        else:
+            estado1 = verEstadoPedidoCompuestoMongo(pedidos_simples)
+            if(estado1 == estado):
+                print("ID PEDIDO COMPUESTO: " + str(pedido["_id"]))
+            
+def verEstadoPedidoCompuestoMongo(pedidosSimples):
+    size = 0
+    aprobados = 0
+    rechazado = False
+    despachado = False
+    entregado = False
+    for pedidoSimple in pedidosSimples:
+        size = size + 1
+        if pedidoSimple["estado"] == "aprobado":
+            aprobados = aprobados + 1
+        elif pedidoSimple["estado"] == "rechazado":
+            print("rechazado==TRUE")
+            rechazado = True
+        elif pedidoSimple["estado"] == "despachado":
+            despachado = True
+        elif pedidoSimple["estado"] == "entregado":
+            entregado = True
+
+    
+    if aprobados == size:
+        return "aprobado"
+    elif rechazado == True:
+        return "rechazado"
+    elif despachado == True and entregado == False:
+        return "despachado"
+    elif despachado == False and entregado == True:
+        return "entregado"
+    else:
+        return "pendiente"
 
 def listarPedidosPorFechasMONGO(fechaInicio, fechaFin):
     fechaInicio = datetime(int(fechaInicio[6:10]),int(fechaInicio[3:5]),int(fechaInicio[0:2]),0,0,0,0)
     fechaFin = datetime(int(fechaFin[6:10]),int(fechaFin[3:5]),int(fechaFin[0:2]),0,0,0)
-    print(fechaInicio)
-    print(fechaFin)
+    
     criteria =  {"fecha": {"$gte": fechaInicio, "$lte": fechaFin}}
     pedidoList = list(myCollection.find(criteria))
     for pedido in pedidoList:
+        size = 0
+        try:
+            size = len(list(pedido["pedidos_simples"]))
+        except:
+            size = 0
+
         print("LISTA PEDIDOS: ")
-        print("ID PEDIDO: " + str(pedido["_id"]))
-        print("FECHA: " + str(pedido["fecha"]))
+        if(size==0):
+            print("ID PEDIDO SIMPLE: " + str(pedido["_id"]))  
+        else:
+            print("ID PEDIDO COMPUESTO: " + str(pedido["_id"]))
 
 def listarPedidosDeClienteMONGO(dni):
     pedidoList = list(myCollection.find({"dni_cliente":int(dni)}))
     for pedido in pedidoList:
+        size = 0
+        try:
+            size = len(list(pedido["pedidos_simples"]))
+        except:
+            size = 0
+
         print("LISTA PEDIDOS: ")
-        print("CLIENTE: " + str(pedido["dni_cliente"]))
+        if(size==0):
+            print("ID PEDIDO SIMPLE: " + str(pedido["_id"]))  
+        else:
+            print("ID PEDIDO COMPUESTO: " + str(pedido["_id"]))
 
 if __name__ == "__main__":
     print("----------------------------------------")
@@ -504,6 +560,21 @@ if __name__ == "__main__":
             emisor1 = input("EMISOR: ")
             numero_cuenta1 = input("NUMERO CUENTA: ")
             altaTarjeta(numero_tarjeta1, tipo1, vencimiento1, emisor1, numero_cuenta1)
+
+        elif(menu == "5"):
+            print( "--->AGREGAR PRODUCTOS Y STOCK:")
+
+            numero_producto = input ("Ingrese numero de producto: ")
+            stock = input("Ingrese la cantidad de stock: ")
+
+            if(Producto.get_or_none(Producto.codigo_producto == numero_producto) != None):
+                ingresarStock(int(numero_producto), int(stock))
+
+            else:
+                precio = input("Ingrese precio del producto: ")
+                nombre = input("Ingrese nombre del producto: ")
+
+                ingresarStock(int(numero_producto), int(stock), int(precio), nombre)
 
         elif(menu == "6"):
             print("--->HAGA SU PEDIDO: ")
@@ -574,21 +645,6 @@ if __name__ == "__main__":
                 if(tarjeta != None):  # hay q ver que devuelve un get que no encontro nada
                     #cobro.aprobado = True
                     print("Su pedido fue recibido con exito")
-
-        elif(menu == "5"):
-            print( "--->AGREGAR PRODUCTOS Y STOCK:")
-
-            numero_producto = input ("Ingrese numero de producto: ")
-            stock = input("Ingrese la cantidad de stock: ")
-
-            if(Producto.get_or_none(Producto.codigo_producto == numero_producto) != None):
-                ingresarStock(int(numero_producto), int(stock))
-
-            else:
-                precio = input("Ingrese precio del producto: ")
-                nombre = input("Ingrese nombre del producto: ")
-
-                ingresarStock(int(numero_producto), int(stock), int(precio), nombre)
 
         elif(menu == "7"):
             print("--->AGREGAR PEDIDO COMPUESTO: ")
