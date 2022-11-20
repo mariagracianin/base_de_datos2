@@ -68,7 +68,17 @@ pedidoSimple4 = {"precio_total": 15,
                         "cantidad": 5}]
                 }
 
-myCollection.insert_one(pedidoCompuesto)
+pedidoSimple5 = {"precio_total": 20, 
+                "estado": "aprobado", 
+                "fecha": datetime.today().replace(microsecond=0),
+                "canal_de_compra": "web",
+                "dni_cliente": 1, 
+                "listaProductos": [{
+                        "codigoProducto": 20,
+                        "cantidad": 5}]
+                }
+
+myCollection.insert_many([pedidoSimple4, pedidoSimple5])
 
 #criteria = {"codigoProducto": 10}
 #criteria = {"fecha":"noTiene"}

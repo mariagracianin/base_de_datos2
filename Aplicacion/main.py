@@ -15,6 +15,7 @@ from Entities.pedidoSimple import PedidoSimple
 from Entities.producto import Producto
 from Entities.productoPedido import productosPedido
 import json
+from bson.objectid import ObjectId
 
 from pymongo import MongoClient
 
@@ -161,7 +162,6 @@ def ingresarStock(codigo_producto, stock, precio = None, nombre = None, qr = "1"
         producto.stock = stock + producto.stock
         producto.save()
 
-
 def altaPedidoProducto(cantidad, codigo_producto, id_pedido_simple):
     nuevoPedidoProducto = productosPedido.create(cantidad = cantidad, codigo_producto = codigo_producto, id_pedido_simple = id_pedido_simple)
     nuevoPedidoProducto.save()
@@ -278,7 +278,6 @@ def listarPedidosPorEstadoYFechas(estado, fechaInicio, fechaFin):
         print(str(x)+")")
         print("CODIGO P.SIMPLE: " + str(pedido.id))
         x = x + 1
-
 
 def listarPedidosPorFechas(fechaInicio, fechaFin):
     try:
@@ -408,42 +407,22 @@ def generarJSONproductoCantidad(codigoProducto, cantidad):
     return jsonProducto
 
 def generadorPedidoSimple(precio, estado, canal_de_compra, dni_cliente, listaProductos, nro_pedido_dompuesto = None):
-
-    day = datetime.now().day
-    month = datetime.now().month
-    year = datetime.now().year
-    date1 = dt.date(year,month,day)
-
     pedidoSimple = {"precio_total": precio, 
-                    "estado": estado, 
-<<<<<<< HEAD
+                    "estado": estado,
                     "fecha": datetime.today().replace(microsecond=0),
                     "canal_de_compra": canal_de_compra,
                     "dni_cliente": int(dni_cliente), 
-=======
-                    "fecha": date1,
-                    "canal_de_compra": canal_de_compra, 
-                    "nro_pedido_compuesto": nro_pedido_dompuesto,
-                    "dni_cliente": dni_cliente, 
->>>>>>> e8f99e80a3c3e7c6b51b835fe369130330918d7e
                     "listaProductos": listaProductos
                     }
     myCollection.insert_one(pedidoSimple)
 
-def gererarPedidoCompuesto( canalDeCompra, dni_cliente, lista_pedidos_simples):
-    day = datetime.now().day
-    month = datetime.now().month
-    year = datetime.now().year
-    date1 = dt.date(year, month, day)
-
+def generarPedidoCompuesto(canalDeCompra, dni_cliente, lista_pedidos_simples):
     pedidoCompuesto = {
-        "fecha": date1,
-        "canal_de_compra":canalDeCompra,
-        "dni_cliente":dni_cliente,
-        "lista_pedidos_simples":lista_pedidos_simples
-
+        "fecha": datetime.today().replace(microsecond=0),
+        "canal_de_compra": canalDeCompra,
+        "dni_cliente": int(dni_cliente),
+        "lista_pedidos_simples": lista_pedidos_simples
     }
-
     myCollection.insert_one(pedidoCompuesto)
 
 def listarPedidosPorEstadoYFechasMONGO(estado, fechaInicio, fechaFin):
@@ -680,31 +659,40 @@ if __name__ == "__main__":
 
             paso = "1"
 
-            day = datetime.now().day
-            month = datetime.now().month
-            year = datetime.now().year
-            date1 = dt.date(year, month, day)
+            #day = datetime.now().day
+            #month = datetime.now().month
+            #year = datetime.now().year
+            #date1 = dt.date(year, month, day)
 
-            #nuevoPedidoCompueto = PedidoCompuesto.create(fecha = date1, canal_de_compra = "visa", dni_cliente = int(dni_cliente))
+            #nuevoPedidoCompueto = PedidoCompuesto.create(fecha = date1, canal_de_compra = "web", dni_cliente = int(dni_cliente))
             #nuevoPedidoCompueto.save()
 
 
-
+            pedidosSimplesAAgregar = []
             while(paso == "1"):
-                id_pedido_simple = input("Ingrese los pedidos simples que quiera agregar: ")
+                id_pedido_simple = input("Ingrese el codigo del uno de los pedidos simples que desea agregar: ")
 
                 #pedidoSimple = PedidoSimple.get_or_none(PedidoSimple.id == id_pedido_simple)
-                pedido_simple = myCollection.find_one()
+                #pedido_simple = myCollection.fi
+                pedido_simple = myCollection.find_one({"_id": ObjectId(id_pedido_simple)})
 
-                if(pedidoSimple != None):
-                    pedidoSimple.nro_pedido_compuesto = nuevoPedidoCompueto.id
-                    pedidoSimple.save()
+                if(pedido_simple != None):
+                    pedidoSimpleAMeterEnCompuesto = {"precio_total": pedido_simple["precio_total"], 
+                                    "estado": pedido_simple["estado"],
+                                    "fecha": pedido_simple["fecha"],
+                                    "canal_de_compra": pedido_simple["canal_de_compra"],
+                                    "dni_cliente": pedido_simple["dni_cliente"], 
+                                    "listaProductos": pedido_simple["listaProductos"]
+                                    }
+                    pedidosSimplesAAgregar.append(pedidoSimpleAMeterEnCompuesto)
+                    myCollection.delete_one({"_id": ObjectId(id_pedido_simple)})
                 else:
                     print("No existe esta id de pedido simple")
 
-                print(pedidoSimple.nro_pedido_compuesto)
+                paso = input("ingrese 1 si quiere agregar otro pedido simple a su pedido compuesto, 0 para terminar")
 
-                paso = input("ingrese 1 si quiere agregar pedidos a su pedido compuesto, 0 para terminar")
+            print(pedidosSimplesAAgregar)
+            generarPedidoCompuesto("web", dni_cliente, pedidosSimplesAAgregar)
 
         elif(menu=="9"):
             print("--->LISTADO CLIENTES CON SQL: ")
