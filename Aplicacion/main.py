@@ -418,7 +418,7 @@ def generadorPedidoSimple(precio, estado, canal_de_compra, dni_cliente, listaPro
 
     pedidoSimple = {"precio_total": precio, 
                     "estado": estado, 
-                    "fecha": "31/07/2022",
+                    "fecha": date1,
                     "canal_de_compra": canal_de_compra, 
                     "nro_pedido_compuesto": nro_pedido_dompuesto,
                     "dni_cliente": dni_cliente, 
@@ -430,6 +430,22 @@ def generadorPedidoSimple(precio, estado, canal_de_compra, dni_cliente, listaPro
     print("-------------------")
     print(type(pedidoSimple))
     myCollection.insert_one(pedidoSimple)
+
+def gererarPedidoCompuesto( canalDeCompra, dni_cliente, lista_pedidos_simples):
+    day = datetime.now().day
+    month = datetime.now().month
+    year = datetime.now().year
+    date1 = dt.date(year, month, day)
+
+    pedidoCompuesto = {
+        "fecha": date1,
+        "canal_de_compra":canalDeCompra,
+        "dni_cliente":dni_cliente,
+        "lista_pedidos_simples":lista_pedidos_simples
+
+    }
+
+    myCollection.insert_one(pedidoCompuesto)
 
 def listarPedidosPorEstadoYFechasMONGO(estado, fechaInicio, fechaFin): 
     pedidoList = list(myCollection.find({"estado":estado,"listaProductos": listaJSONsProductoCantidad}))
@@ -594,13 +610,16 @@ if __name__ == "__main__":
             year = datetime.now().year
             date1 = dt.date(year, month, day)
 
-            nuevoPedidoCompueto = PedidoCompuesto.create(fecha = date1, canal_de_compra = "visa", dni_cliente = int(dni_cliente))
-            nuevoPedidoCompueto.save()
+            #nuevoPedidoCompueto = PedidoCompuesto.create(fecha = date1, canal_de_compra = "visa", dni_cliente = int(dni_cliente))
+            #nuevoPedidoCompueto.save()
+
+
 
             while(paso == "1"):
                 id_pedido_simple = input("Ingrese los pedidos simples que quiera agregar: ")
 
-                pedidoSimple = PedidoSimple.get_or_none(PedidoSimple.id == id_pedido_simple)
+                #pedidoSimple = PedidoSimple.get_or_none(PedidoSimple.id == id_pedido_simple)
+                pedido_simple = myCollection.find_one()
 
                 if(pedidoSimple != None):
                     pedidoSimple.nro_pedido_compuesto = nuevoPedidoCompueto.id
