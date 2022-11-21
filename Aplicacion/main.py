@@ -153,6 +153,33 @@ def modificarCliente(dni, nuevoNombre, nuevoApellido, nuevoCelular, nuevoMail, n
     else:
         print("El cliente que queres modificar no existe")
 
+def modificarEstadoPSimple(dni, nuevoNombre, nuevoApellido, nuevoCelular, nuevoMail, nuevoDepartamento, nuevaCalle, nuevoCodigoPostal, nuevoApartamento, nuevaLocalidad, nuevaPuerta):
+    seguir  = False
+    if(Cliente.get_or_none(Cliente.dni==dni)):
+        seguir = True
+
+    if(seguir == True):
+        try:
+            cliente = Cliente.get(Cliente.dni==dni)
+            cliente.nombre = nuevoNombre
+            cliente.apellido = nuevoApellido
+            cliente.celular = nuevoCelular
+            cliente.mail = nuevoMail
+            cliente.departamento = nuevoDepartamento
+            cliente.calle = nuevaCalle
+            cliente.codigo_postal = nuevoCodigoPostal
+            cliente.apartamento = nuevoApartamento
+            cliente.localidad = nuevaLocalidad
+            cliente.numero_puerta = nuevaPuerta
+            cliente.save()
+            print("Modificacion exitosa")
+        except:
+            print(exception)
+            print("ERROR en la modificaion")
+            print("Esta mal ingresada la cedula")
+    else:
+        print("El cliente que queres modificar no existe")
+        
 def ingresarStock(codigo_producto, stock, precio = None, nombre = None, qr = "1"):
     if (Producto.get_or_none(Producto.codigo_producto == codigo_producto) == None):
         nuevoProducto = Producto.create(codigo_producto = codigo_producto, precio = precio, nombre = nombre, stock = stock, qr = qr)
@@ -373,32 +400,6 @@ def saberEstadoPCompuesto(pedidoCompuesto):
     else:
         return "pendiente"
 
-def modificarEstadoPSimple(dni, nuevoNombre, nuevoApellido, nuevoCelular, nuevoMail, nuevoDepartamento, nuevaCalle, nuevoCodigoPostal, nuevoApartamento, nuevaLocalidad, nuevaPuerta):
-    seguir  = False
-    if(Cliente.get_or_none(Cliente.dni==dni)):
-        seguir = True
-
-    if(seguir == True):
-        try:
-            cliente = Cliente.get(Cliente.dni==dni)
-            cliente.nombre = nuevoNombre
-            cliente.apellido = nuevoApellido
-            cliente.celular = nuevoCelular
-            cliente.mail = nuevoMail
-            cliente.departamento = nuevoDepartamento
-            cliente.calle = nuevaCalle
-            cliente.codigo_postal = nuevoCodigoPostal
-            cliente.apartamento = nuevoApartamento
-            cliente.localidad = nuevaLocalidad
-            cliente.numero_puerta = nuevaPuerta
-            cliente.save()
-            print("Modificacion exitosa")
-        except:
-            print(exception)
-            print("ERROR en la modificaion")
-            print("Esta mal ingresada la cedula")
-    else:
-        print("El cliente que queres modificar no existe")
 
 def generarJSONproductoCantidad(codigoProducto, cantidad):
     productoCantidad = {"codigoProducto": codigoProducto, "cantidad": cantidad}
