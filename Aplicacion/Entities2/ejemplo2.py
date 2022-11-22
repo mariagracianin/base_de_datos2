@@ -55,7 +55,7 @@ pedidoSimple3 = {"precio_total": 10,
 pedidoCompuesto = {"fecha": datetime.today().replace(microsecond=0),
                 "canal_de_compra": "web",
                 "dni_cliente": 1, 
-                "pedidos_simples": [pedidoSimple1, pedidoSimple2, pedidoSimple3]
+                "lista_pedidos_simples": [pedidoSimple1, pedidoSimple2, pedidoSimple3]
                 }
 
 pedidoSimple4 = {"precio_total": 15, 
@@ -78,7 +78,7 @@ pedidoSimple5 = {"precio_total": 20,
                         "cantidad": 5}]
                 }
 
-myCollection.insert_many([pedidoSimple4, pedidoSimple5])
+myCollection.insert_many([pedidoSimple4, pedidoSimple5, pedidoCompuesto])
 
 #criteria = {"codigoProducto": 10}
 #criteria = {"fecha":"noTiene"}

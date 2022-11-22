@@ -52,9 +52,13 @@ def mostrarMenu():
     print("9) Listar clientes con SQL")
     print("10) Listar clientes")
     print("11) Listar productos en stock")
-    print("12) Listar pedido por estado y fechas")
-    print("13) Listar pedidos entre fechas")
-    print("14) Listar pedidos de un cliente dado")
+
+    #estas no van a funcionar xq el codigo esta comentado para poder trabajar con MONGO
+    #print("12) Listar pedido por estado y fechas")
+    #print("13) Listar pedidos entre fechas")
+    #print("14) Listar pedidos de un cliente dado")
+
+    #ESTAS SI SON LAS DE MONGO
     print("15) Listar pedidos por estado y fechas MONGO")
     print("16) Listar pedidos entre fechas MONGO")
     print("17) Listar pedidos de un cliente dado MONGO")
@@ -72,7 +76,6 @@ def verClientesSQL():
         print(str(x)+")")
         print(cliente)
         x = x + 1    
-
 
 def altaCliente(dni1, nombre1, apellido1, celular1, mail1, departamento1, calle1, codigo_postal1, apartamento1, localidad1, numero_puerta1, nombre_usuario1):
     existe  = False
@@ -152,34 +155,7 @@ def modificarCliente(dni, nuevoNombre, nuevoApellido, nuevoCelular, nuevoMail, n
             print("Esta mal ingresada la cedula")
     else:
         print("El cliente que queres modificar no existe")
-
-def modificarEstadoPSimple(dni, nuevoNombre, nuevoApellido, nuevoCelular, nuevoMail, nuevoDepartamento, nuevaCalle, nuevoCodigoPostal, nuevoApartamento, nuevaLocalidad, nuevaPuerta):
-    seguir  = False
-    if(Cliente.get_or_none(Cliente.dni==dni)):
-        seguir = True
-
-    if(seguir == True):
-        try:
-            cliente = Cliente.get(Cliente.dni==dni)
-            cliente.nombre = nuevoNombre
-            cliente.apellido = nuevoApellido
-            cliente.celular = nuevoCelular
-            cliente.mail = nuevoMail
-            cliente.departamento = nuevoDepartamento
-            cliente.calle = nuevaCalle
-            cliente.codigo_postal = nuevoCodigoPostal
-            cliente.apartamento = nuevoApartamento
-            cliente.localidad = nuevaLocalidad
-            cliente.numero_puerta = nuevaPuerta
-            cliente.save()
-            print("Modificacion exitosa")
-        except:
-            print(exception)
-            print("ERROR en la modificaion")
-            print("Esta mal ingresada la cedula")
-    else:
-        print("El cliente que queres modificar no existe")
-        
+      
 def ingresarStock(codigo_producto, stock, precio = None, nombre = None, qr = "1"):
     if (Producto.get_or_none(Producto.codigo_producto == codigo_producto) == None):
         nuevoProducto = Producto.create(codigo_producto = codigo_producto, precio = precio, nombre = nombre, stock = stock, qr = qr)
@@ -400,7 +376,6 @@ def saberEstadoPCompuesto(pedidoCompuesto):
     else:
         return "pendiente"
 
-
 def generarJSONproductoCantidad(codigoProducto, cantidad):
     productoCantidad = {"codigoProducto": codigoProducto, "cantidad": cantidad}
     jsonProducto = json.dumps(productoCantidad, indent=4)
@@ -427,25 +402,31 @@ def generarPedidoCompuesto(canalDeCompra, dni_cliente, lista_pedidos_simples):
     myCollection.insert_one(pedidoCompuesto)
 
 def listarPedidosPorEstadoYFechasMONGO(estado, fechaInicio, fechaFin):
-    fechaInicio = datetime(int(fechaInicio[6:10]),int(fechaInicio[3:5]),int(fechaInicio[0:2]),0,0,0,0)
-    fechaFin = datetime(int(fechaFin[6:10]),int(fechaFin[3:5]),int(fechaFin[0:2]),0,0,0)
-
-
+    if estado!="aprobado" and estado != "rechazado" and estado != "pendiente" and estado != "despachado" and estado != "entregado":
+        print("INGRESE UN ESTADO VALIDO")
+        return
+    try:
+        fechaInicio = datetime(int(fechaInicio[6:10]),int(fechaInicio[3:5]),int(fechaInicio[0:2]),0,0,0,0)
+        fechaFin = datetime(int(fechaFin[6:10]),int(fechaFin[3:5]),int(fechaFin[0:2]),0,0,0)
+    except:
+        print("INGRESE UN CONJUNTO DE FECHAS VALIDAS")
+        return
+    
     criteria =  {"fecha": {"$gte": fechaInicio, "$lte": fechaFin}}
     pedidoList = list(myCollection.find(criteria))
+    print("LISTA PEDIDOS SIMPLES Y COMPUESTOS: ")
     for pedido in pedidoList:
         size = 0
         pedidos_simples = 0
         try:
-            pedidos_simples = list(pedido["pedidos_simples"])
+            pedidos_simples = list(pedido["lista_pedidos_simples"])
             size = len(pedidos_simples)
         except:
             size = 0
 
-        print("LISTA PEDIDOS: ")
-        if(size==0):
+        if(size==0 and pedido["estado"]==estado):
             print("ID PEDIDO SIMPLE: " + str(pedido["_id"]))  
-        else:
+        elif(size!=0):
             estado1 = verEstadoPedidoCompuestoMongo(pedidos_simples)
             if(estado1 == estado):
                 print("ID PEDIDO COMPUESTO: " + str(pedido["_id"]))
@@ -461,7 +442,6 @@ def verEstadoPedidoCompuestoMongo(pedidosSimples):
         if pedidoSimple["estado"] == "aprobado":
             aprobados = aprobados + 1
         elif pedidoSimple["estado"] == "rechazado":
-            print("rechazado==TRUE")
             rechazado = True
         elif pedidoSimple["estado"] == "despachado":
             despachado = True
@@ -486,14 +466,15 @@ def listarPedidosPorFechasMONGO(fechaInicio, fechaFin):
     
     criteria =  {"fecha": {"$gte": fechaInicio, "$lte": fechaFin}}
     pedidoList = list(myCollection.find(criteria))
+
+    print("LISTA PEDIDOS SIMPLES Y COMPUESTOS: ")
     for pedido in pedidoList:
         size = 0
         try:
-            size = len(list(pedido["pedidos_simples"]))
+            size = len(list(pedido["lista_pedidos_simples"]))
         except:
             size = 0
-
-        print("LISTA PEDIDOS: ")
+        
         if(size==0):
             print("ID PEDIDO SIMPLE: " + str(pedido["_id"]))  
         else:
@@ -504,7 +485,7 @@ def listarPedidosDeClienteMONGO(dni):
     for pedido in pedidoList:
         size = 0
         try:
-            size = len(list(pedido["pedidos_simples"]))
+            size = len(list(pedido["lista_pedidos_simples"]))
         except:
             size = 0
 
@@ -590,12 +571,10 @@ if __name__ == "__main__":
             if(Cliente.get_or_none(Cliente.dni == dni_cliente) == None):
                 print("Ingrese un cliente valido para realizar un pedido")
             else:
-                sigo = input("Precione 1 si quiere agreagar un producto o  0 si ya termino su pedido: ")
-
-                day = datetime.now().day
-                month = datetime.now().month
-                year = datetime.now().year
-                date1 = dt.date(year,month,day)
+                #day = datetime.now().day
+                #month = datetime.now().month
+                #year = datetime.now().year
+                #date1 = dt.date(year,month,day)
 
                 #PedidoCompuesto.create(fecha = date1, canal_de_compra = "", dni_cliente = dni_cliente)
                 #pedidoCompuesto = PedidoCompuesto.get_or_none(PedidoCompuesto.dni_cliente == dni_cliente)
@@ -607,11 +586,16 @@ if __name__ == "__main__":
 
                 #print(str(pedido_simple.id) + "---------------------------")
 
+                sigo = input("Precione 1 si quiere agreagar un producto o  0 si ya termino su pedido: ")
                 cantidad_productos = 0
                 listaJSONsProductoCantidad = []
 
                 while(sigo == "1" and cantidad_productos < 21):
                     codigo_producto = input("Numero del producto: ")
+                    while (Producto.get_or_none(Producto.codigo_producto == codigo_producto) == None):
+                        print("INGRESE UN NUMERO DE PRODUCTO VALIDO")
+                        codigo_producto = input("Numero del producto: ")
+
                     cantidad_del_producto = input("Cantidad del poducto que quiere llevar: ")
                     # PARA POSTGRES
                     # -------------------------------------------------------------------
@@ -657,43 +641,46 @@ if __name__ == "__main__":
         elif(menu == "7"):
             print("--->AGREGAR PEDIDO COMPUESTO: ")
             dni_cliente = input("Ingrese su DNI: ")
+            if(Cliente.get_or_none(Cliente.dni == dni_cliente) == None):
+                print("Ingrese un cliente valido para realizar un pedido")
+            else:
 
-            paso = "1"
+                paso = "1"
 
-            #day = datetime.now().day
-            #month = datetime.now().month
-            #year = datetime.now().year
-            #date1 = dt.date(year, month, day)
+                #day = datetime.now().day
+                #month = datetime.now().month
+                #year = datetime.now().year
+                #date1 = dt.date(year, month, day)
 
-            #nuevoPedidoCompueto = PedidoCompuesto.create(fecha = date1, canal_de_compra = "web", dni_cliente = int(dni_cliente))
-            #nuevoPedidoCompueto.save()
+                #nuevoPedidoCompueto = PedidoCompuesto.create(fecha = date1, canal_de_compra = "web", dni_cliente = int(dni_cliente))
+                #nuevoPedidoCompueto.save()
 
 
-            pedidosSimplesAAgregar = []
-            while(paso == "1"):
-                id_pedido_simple = input("Ingrese el codigo del uno de los pedidos simples que desea agregar: ")
+                pedidosSimplesAAgregar = []
+                while(paso == "1"):
+                    id_pedido_simple = input("Ingrese el codigo del uno de los pedidos simples que desea agregar: ")
 
-                #pedidoSimple = PedidoSimple.get_or_none(PedidoSimple.id == id_pedido_simple)
-                #pedido_simple = myCollection.fi
-                pedido_simple = myCollection.find_one({"_id": ObjectId(id_pedido_simple)})
+                    #pedidoSimple = PedidoSimple.get_or_none(PedidoSimple.id == id_pedido_simple)
+                    #pedido_simple = myCollection.fi
+                    pedido_simple = myCollection.find_one({"_id": ObjectId(id_pedido_simple)})
 
-                if(pedido_simple != None):
-                    pedidoSimpleAMeterEnCompuesto = {"precio_total": pedido_simple["precio_total"], 
-                                    "estado": pedido_simple["estado"],
-                                    "fecha": pedido_simple["fecha"],
-                                    "canal_de_compra": pedido_simple["canal_de_compra"],
-                                    "dni_cliente": pedido_simple["dni_cliente"], 
-                                    "listaProductos": pedido_simple["listaProductos"]
-                                    }
-                    pedidosSimplesAAgregar.append(pedidoSimpleAMeterEnCompuesto)
-                    myCollection.delete_one({"_id": ObjectId(id_pedido_simple)})
-                else:
-                    print("No existe esta id de pedido simple")
+                    if(pedido_simple != None):
+                        pedidoSimpleAMeterEnCompuesto = {"precio_total": pedido_simple["precio_total"], 
+                                        "estado": pedido_simple["estado"],
+                                        "fecha": pedido_simple["fecha"],
+                                        "canal_de_compra": pedido_simple["canal_de_compra"],
+                                        "dni_cliente": pedido_simple["dni_cliente"], 
+                                        "listaProductos": pedido_simple["listaProductos"]
+                                        }
+                        pedidosSimplesAAgregar.append(pedidoSimpleAMeterEnCompuesto)
+                        myCollection.delete_one({"_id": ObjectId(id_pedido_simple)})
+                    else:
+                        print("No existe esta id de pedido simple")
 
-                paso = input("ingrese 1 si quiere agregar otro pedido simple a su pedido compuesto, 0 para terminar")
+                    paso = input("ingrese 1 si quiere agregar otro pedido simple a su pedido compuesto, 0 para terminar")
 
-            print(pedidosSimplesAAgregar)
-            generarPedidoCompuesto("web", dni_cliente, pedidosSimplesAAgregar)
+                print(pedidosSimplesAAgregar)
+                generarPedidoCompuesto("web", dni_cliente, pedidosSimplesAAgregar)
 
         elif(menu=="9"):
             print("--->LISTADO CLIENTES CON SQL: ")
